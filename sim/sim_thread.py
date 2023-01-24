@@ -355,7 +355,7 @@ class Thread:
         elif self.is_busy():
             return "Thread {} (queue {}): busy on {}".format(self.id, self.queue.id if self.queue != -1 else -1, self.current_task)
         else:
-            return "Thread {} (queue {}): idle".format(self.id, self.queue.id)
+            return "Thread {} (queue {}): idle".format(self.id, self.queue.id if self.queue != -1 else -1)
 
     def __repr__(self):
         return str(self)

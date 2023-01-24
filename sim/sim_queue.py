@@ -23,6 +23,7 @@ class Queue:
         self.awaiting_enqueue = False
         self.config = config
         self.state = state
+        self.is_orphan = False
 
     def set_thread(self, thread_id):
         """Add a thread to the set of threads corresponding to this queue."""

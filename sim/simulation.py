@@ -143,7 +143,7 @@ class Simulation:
             logging.debug("\nTime step: {}".format(self.state.timer))
             logging.debug("Thread status:")
             for thread in self.state.threads:
-                logging.debug(str(thread) + " -- queue length of " + str(thread.queue.length()))
+                logging.debug(str(thread) + " -- queue length of " + str(thread.queue.length() if thread.queue != -1 else -1))
 
             # Print progress bar
             if self.config.progress_bar and self.state.timer.get_time() % 10000 == 0:

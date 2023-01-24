@@ -1,6 +1,6 @@
 {
  "avg_system_load": 0.5,
- "num_queues": 32,
+ "num_queues": 31,
  "num_threads": 32,
  "mapping": [
  0,
@@ -33,8 +33,7 @@
  27,
  28,
  29,
- 30,
- // 31 total queues is less than cores in new_policy
+ 30
 ],
  "load_thread_count": 32,
  "num_tasks": null,
@@ -73,9 +72,7 @@
  "join_bounded_shortest_queue": false,
  "record_queue_lens": false,
 
-  // new_policy confs
-  "new_policy_enable": true,
-  // end new_policy confs
+ "new_policy_enable": true,
 
  "AVERAGE_SERVICE_TIME": 1000,
  "WORK_STEAL_CHECK_TIME": 100,
