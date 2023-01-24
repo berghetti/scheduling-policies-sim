@@ -235,6 +235,14 @@ class Thread:
     def schedule(self, time_increment=1):
         """Determine how to spend the thread's time."""
 
+        #new_policy
+        if self.config.new_policy_enable and self.queue == -1:
+            # search by orphan queues
+            for queue in self.state.queues:
+                if queue.is_orphan:
+                    self.queue = queue
+                    break
+
         # Work on current task if there is one
         if self.is_busy():
             # Only non-new tasks should use the time_increment (new ones did not exist before this cycle)
@@ -345,7 +353,7 @@ class Thread:
         if self.work_search_state == WorkSearchState.PARKED:
             return "Thread {} (queue {}): parked".format(self.id, self.queue.id)
         elif self.is_busy():
-            return "Thread {} (queue {}): busy on {}".format(self.id, self.queue.id, self.current_task)
+            return "Thread {} (queue {}): busy on {}".format(self.id, self.queue.id if self.queue != -1 else -1, self.current_task)
         else:
             return "Thread {} (queue {}): idle".format(self.id, self.queue.id)
 

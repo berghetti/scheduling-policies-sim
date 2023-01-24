@@ -1,0 +1,223 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ALLOCATING	work_search_state.py	/^    ALLOCATING = 0$/;"	v	class:WorkSearchState
+AbstractWorkStealTask	tasks.py	/^class AbstractWorkStealTask(Task):$/;"	c
+CONFIG_LOG_DIR	simulation.py	/^CONFIG_LOG_DIR = "{}\/config_records\/"$/;"	v
+DEFAULT_LOCK_ID	sim_queue.py	/^    DEFAULT_LOCK_ID = -1$/;"	v	class:Queue
+EnqueuePenaltyTask	tasks.py	/^class EnqueuePenaltyTask(Task):$/;"	c
+FlagStealTask	tasks.py	/^class FlagStealTask(Task):$/;"	c
+IdleTask	tasks.py	/^class IdleTask(Task):$/;"	c
+LOCAL_QUEUE_FINAL_CHECK	work_search_state.py	/^    LOCAL_QUEUE_FINAL_CHECK = 3$/;"	v	class:WorkSearchState
+LOCAL_QUEUE_FIRST_CHECK	work_search_state.py	/^    LOCAL_QUEUE_FIRST_CHECK = 1$/;"	v	class:WorkSearchState
+MAIN_QUEUE_ID	sim_queue.py	/^    MAIN_QUEUE_ID = -1$/;"	v	class:Queue
+META_LOG_FILE	simulation.py	/^META_LOG_FILE = "{}\/results\/meta_log"$/;"	v
+MULTI_THREAD_SIM_NAME_FORMAT	simulation.py	/^MULTI_THREAD_SIM_NAME_FORMAT = "{}_{}_t{}"$/;"	v
+OracleWorkStealTask	tasks.py	/^class OracleWorkStealTask(AbstractWorkStealTask):$/;"	c
+PARKED	work_search_state.py	/^    PARKED = 5$/;"	v	class:WorkSearchState
+PARKING	work_search_state.py	/^    PARKING = 4$/;"	v	class:WorkSearchState
+Queue	sim_queue.py	/^class Queue:$/;"	c
+QueueCheckTask	tasks.py	/^class QueueCheckTask(Task):$/;"	c
+RESULTS_DIR	simulation.py	/^RESULTS_DIR = "{}\/results\/"$/;"	v
+ReallocationTask	tasks.py	/^class ReallocationTask(Task):$/;"	c
+RequeueTask	tasks.py	/^class RequeueTask(Task):$/;"	c
+SINGLE_THREAD_SIM_NAME_FORMAT	simulation.py	/^SINGLE_THREAD_SIM_NAME_FORMAT = "{}_{}"$/;"	v
+SimConfig	sim_config.py	/^class SimConfig:$/;"	c
+SimProcess	run_sim.py	/^class SimProcess(multiprocessing.Process):$/;"	c
+Simulation	simulation.py	/^class Simulation:$/;"	c
+SimulationState	simulation_state.py	/^class SimulationState:$/;"	c
+Task	tasks.py	/^class Task:$/;"	c
+Thread	sim_thread.py	/^class Thread:$/;"	c
+Timer	timer.py	/^class Timer:$/;"	c
+WORK_STEAL_CHECK	work_search_state.py	/^    WORK_STEAL_CHECK = 2$/;"	v	class:WorkSearchState
+WorkSearchSpin	tasks.py	/^class WorkSearchSpin(Task): # TODO: Check the preemption for double-counting$/;"	c
+WorkSearchState	work_search_state.py	/^class WorkSearchState:$/;"	c
+WorkStealTask	tasks.py	/^class WorkStealTask(AbstractWorkStealTask):$/;"	c
+__eq__	work_search_state.py	/^    def __eq__(self, other):$/;"	m	class:WorkSearchState	file:
+__init__	run_sim.py	/^    def __init__(self, thread_id, name, configuration, sim_dir_path):$/;"	m	class:SimProcess
+__init__	sim_config.py	/^    def __init__(self, name=None, num_queues=None, num_threads=None, mapping=[], avg_system_load=None,$/;"	m	class:SimConfig
+__init__	sim_queue.py	/^    def __init__(self, identifier, config, state):$/;"	m	class:Queue
+__init__	sim_thread.py	/^    def __init__(self, given_queue, identifier, config, state, given_sibling=None):$/;"	m	class:Thread
+__init__	simulation.py	/^    def __init__(self, configuration, sim_dir_path):$/;"	m	class:Simulation
+__init__	simulation_state.py	/^    def __init__(self, config):$/;"	m	class:SimulationState
+__init__	tasks.py	/^    def __init__(self, thread, config, state):$/;"	m	class:OracleWorkStealTask
+__init__	tasks.py	/^    def __init__(self, thread, config, state):$/;"	m	class:ReallocationTask
+__init__	tasks.py	/^    def __init__(self, thread, config, state):$/;"	m	class:RequeueTask
+__init__	tasks.py	/^    def __init__(self, thread, config, state):$/;"	m	class:WorkSearchSpin
+__init__	tasks.py	/^    def __init__(self, thread, config, state):$/;"	m	class:WorkStealTask
+__init__	tasks.py	/^    def __init__(self, thread, config, state, preempted=False):$/;"	m	class:EnqueuePenaltyTask
+__init__	tasks.py	/^    def __init__(self, thread, config, state, return_to_ws_task=None):$/;"	m	class:FlagStealTask
+__init__	tasks.py	/^    def __init__(self, thread, config, state, return_to_ws_task=None):$/;"	m	class:QueueCheckTask
+__init__	tasks.py	/^    def __init__(self, thread, initial_time, config, state):$/;"	m	class:AbstractWorkStealTask
+__init__	tasks.py	/^    def __init__(self, time, arrival_time, config, state):$/;"	m	class:Task
+__init__	tasks.py	/^    def __init__(self, time, config, state):$/;"	m	class:IdleTask
+__init__	work_search_state.py	/^    def __init__(self, config, state):$/;"	m	class:WorkSearchState
+__repr__	sim_queue.py	/^    def __repr__(self):$/;"	m	class:Queue	file:
+__repr__	sim_thread.py	/^    def __repr__(self):$/;"	m	class:Thread	file:
+__repr__	tasks.py	/^    def __repr__(self):$/;"	m	class:Task	file:
+__str__	sim_config.py	/^    def __str__(self):$/;"	m	class:SimConfig	file:
+__str__	sim_queue.py	/^    def __str__(self):$/;"	m	class:Queue	file:
+__str__	sim_thread.py	/^    def __str__(self):$/;"	m	class:Thread	file:
+__str__	tasks.py	/^    def __str__(self):$/;"	m	class:Task	file:
+__str__	timer.py	/^    def __str__(self):$/;"	m	class:Timer	file:
+__str__	work_search_state.py	/^    def __str__(self):$/;"	m	class:WorkSearchState	file:
+add_final_stats	simulation_state.py	/^    def add_final_stats(self):$/;"	m	class:SimulationState
+add_paired_time	sim_thread.py	/^    def add_paired_time(self, amount):$/;"	m	class:Thread
+add_realloc_time_check_in	simulation_state.py	/^    def add_realloc_time_check_in(self):$/;"	m	class:SimulationState
+add_reallocation	simulation_state.py	/^    def add_reallocation(self, is_park, attempted=False):$/;"	m	class:SimulationState
+add_time	tasks.py	/^    def add_time(self, amount):$/;"	m	class:AbstractWorkStealTask
+add_time	tasks.py	/^    def add_time(self, time):$/;"	m	class:RequeueTask
+add_unpaired_time	sim_thread.py	/^    def add_unpaired_time(self, amount):$/;"	m	class:Thread
+advance	work_search_state.py	/^    def advance(self):$/;"	m	class:WorkSearchState
+allocate	work_search_state.py	/^    def allocate(self):$/;"	m	class:WorkSearchState
+allocate_thread	simulation_state.py	/^    def allocate_thread(self):$/;"	m	class:SimulationState
+allowed_buffer_cores	simulation_state.py	/^    def allowed_buffer_cores(self):$/;"	m	class:SimulationState
+any_incomplete	simulation_state.py	/^    def any_incomplete(self):$/;"	m	class:SimulationState
+any_queue_past_delay_threshold	simulation_state.py	/^    def any_queue_past_delay_threshold(self):$/;"	m	class:SimulationState
+can_increase_delay	simulation_state.py	/^    def can_increase_delay(self):$/;"	m	class:SimulationState
+can_remove_buffer_core	simulation_state.py	/^    def can_remove_buffer_core(self):$/;"	m	class:SimulationState
+can_requeue_more_tasks	tasks.py	/^    def can_requeue_more_tasks(self):$/;"	m	class:RequeueTask
+cfg_json	simulation.py	/^    cfg_json = open(sys.argv[1], "r")$/;"	v	class:Simulation
+check_can_flag_steal	tasks.py	/^    def check_can_flag_steal(self):$/;"	m	class:FlagStealTask
+check_can_work_steal	tasks.py	/^    def check_can_work_steal(self, remote, get_lock_if_available=True):$/;"	m	class:AbstractWorkStealTask
+check_sibling	tasks.py	/^    def check_sibling(self):$/;"	m	class:WorkStealTask
+choose_enqueue	simulation.py	/^    def choose_enqueue(self, num_choices):$/;"	m	class:Simulation
+choose_first_queue	tasks.py	/^    def choose_first_queue(self, num_choices=2):$/;"	m	class:WorkStealTask
+choose_remote	tasks.py	/^    def choose_remote(self):$/;"	m	class:OracleWorkStealTask
+config_record	run_sim.py	/^    config_record = open($/;"	v	class:SimProcess
+config_record	simulation.py	/^    config_record = open(CONFIG_LOG_DIR.format(path_to_sim) + run_name + ".json", "w")$/;"	v	class:Simulation
+cores	run_sim.py	/^    cores = None$/;"	v	class:SimProcess
+current_average_queueing_delay	simulation_state.py	/^    def current_average_queueing_delay(self):$/;"	m	class:SimulationState
+current_average_service_time_sum	simulation_state.py	/^    def current_average_service_time_sum(self):$/;"	m	class:SimulationState
+current_buffer_cores	simulation_state.py	/^    def current_buffer_cores(self, check_work_available=False):$/;"	m	class:SimulationState
+current_delay	sim_queue.py	/^    def current_delay(self, second=False):$/;"	m	class:Queue
+current_utilization	simulation_state.py	/^    def current_utilization(self, reset=True):$/;"	m	class:SimulationState
+currently_non_productive_cores	simulation_state.py	/^    def currently_non_productive_cores(self):$/;"	m	class:SimulationState
+currently_working_cores	simulation_state.py	/^    def currently_working_cores(self):$/;"	m	class:SimulationState
+deallocate_thread	simulation_state.py	/^    def deallocate_thread(self, thread_id):$/;"	m	class:SimulationState
+decode_object	sim_config.py	/^    def decode_object(o):$/;"	m	class:SimConfig
+delay_flag_check	tasks.py	/^    def delay_flag_check(self):$/;"	m	class:WorkStealTask
+delay_flagging	sim_thread.py	/^    def delay_flagging(self):$/;"	m	class:Thread
+dequeue	sim_queue.py	/^    def dequeue(self):$/;"	m	class:Queue
+description	run_sim.py	/^    description = ""$/;"	v	class:SimProcess
+descriptor	tasks.py	/^    def descriptor(self):$/;"	m	class:EnqueuePenaltyTask
+descriptor	tasks.py	/^    def descriptor(self):$/;"	m	class:FlagStealTask
+descriptor	tasks.py	/^    def descriptor(self):$/;"	m	class:IdleTask
+descriptor	tasks.py	/^    def descriptor(self):$/;"	m	class:OracleWorkStealTask
+descriptor	tasks.py	/^    def descriptor(self):$/;"	m	class:QueueCheckTask
+descriptor	tasks.py	/^    def descriptor(self):$/;"	m	class:ReallocationTask
+descriptor	tasks.py	/^    def descriptor(self):$/;"	m	class:RequeueTask
+descriptor	tasks.py	/^    def descriptor(self):$/;"	m	class:Task
+descriptor	tasks.py	/^    def descriptor(self):$/;"	m	class:WorkSearchSpin
+descriptor	tasks.py	/^    def descriptor(self):$/;"	m	class:WorkStealTask
+determine_pairings	simulation.py	/^    def determine_pairings(self, jump):$/;"	m	class:Simulation
+elapsed	timer.py	/^    elapsed = 0$/;"	v	class:Timer
+enqueue	sim_queue.py	/^    def enqueue(self, task, set_original=False, requeued=False, stolen=False, flag_steal=False,$/;"	m	class:Queue
+expected_completion_time	tasks.py	/^    def expected_completion_time(self):$/;"	m	class:Task
+expected_completion_time	tasks.py	/^    def expected_completion_time(self):$/;"	m	class:WorkStealTask
+fast_forward	simulation.py	/^    def fast_forward(self, jump):$/;"	m	class:Simulation
+find_deallocation	simulation.py	/^    def find_deallocation(self):$/;"	m	class:Simulation
+find_next_arrival_and_alloc	simulation.py	/^    def find_next_arrival_and_alloc(self, task_number, allocation_number):$/;"	m	class:Simulation
+find_time_jump	simulation.py	/^    def find_time_jump(self, next_arrival, next_allocation=None, set_clock=True, immediate_reschedule=False):$/;"	m	class:Simulation
+first_search	tasks.py	/^    def first_search(self):$/;"	m	class:WorkStealTask
+first_with_to_enqueue	sim_queue.py	/^    def first_with_to_enqueue(self):$/;"	m	class:Queue
+flag_steal	tasks.py	/^    def flag_steal(self):$/;"	m	class:FlagStealTask
+get_core	sim_queue.py	/^    def get_core(self, all=False):$/;"	m	class:Queue
+get_stat_headers	sim_thread.py	/^    def get_stat_headers(config):$/;"	m	class:Thread
+get_stat_headers	tasks.py	/^    def get_stat_headers(config):$/;"	m	class:Task
+get_stats	sim_thread.py	/^    def get_stats(self):$/;"	m	class:Thread
+get_stats	tasks.py	/^    def get_stats(self):$/;"	m	class:Task
+get_threads_by_status	sim_queue.py	/^    def get_threads_by_status(self, is_parked):$/;"	m	class:Queue
+get_time	timer.py	/^    def get_time(self):$/;"	m	class:Timer
+head	sim_queue.py	/^    def head(self):$/;"	m	class:Queue
+increment	timer.py	/^    def increment(self, amount):$/;"	m	class:Timer
+initialize_state	simulation_state.py	/^    def initialize_state(self, config):$/;"	m	class:SimulationState
+is_active	work_search_state.py	/^    def is_active(self):$/;"	m	class:WorkSearchState
+is_busy	sim_thread.py	/^    def is_busy(self, search_spin_idle=False):$/;"	m	class:Thread
+is_distracted	sim_thread.py	/^    def is_distracted(self, evaluate=True):$/;"	m	class:Thread
+is_done	tasks.py	/^    def is_done(self):$/;"	m	class:AbstractWorkStealTask
+is_done	tasks.py	/^    def is_done(self):$/;"	m	class:OracleWorkStealTask
+is_productive	sim_thread.py	/^    def is_productive(self):$/;"	m	class:Thread
+is_zero_duration	tasks.py	/^    def is_zero_duration(self):$/;"	m	class:Task
+length	sim_queue.py	/^    def length(self, count_current=False):$/;"	m	class:Queue
+length_by_service_time	sim_queue.py	/^    def length_by_service_time(self):$/;"	m	class:Queue
+loads	run_sim.py	/^    loads = list(range(10, 110, 10))$/;"	v	class:SimProcess
+mark_flag_response	tasks.py	/^    def mark_flag_response(self):$/;"	m	class:FlagStealTask
+num_currently_distracted_cores	simulation_state.py	/^    def num_currently_distracted_cores(self):$/;"	m	class:SimulationState
+num_currently_working_cores	simulation_state.py	/^    def num_currently_working_cores(self):$/;"	m	class:SimulationState
+num_paired_cores	simulation_state.py	/^    def num_paired_cores(self):$/;"	m	class:SimulationState
+on_complete	tasks.py	/^    def on_complete(self):$/;"	m	class:EnqueuePenaltyTask
+on_complete	tasks.py	/^    def on_complete(self):$/;"	m	class:FlagStealTask
+on_complete	tasks.py	/^    def on_complete(self):$/;"	m	class:IdleTask
+on_complete	tasks.py	/^    def on_complete(self):$/;"	m	class:OracleWorkStealTask
+on_complete	tasks.py	/^    def on_complete(self):$/;"	m	class:QueueCheckTask
+on_complete	tasks.py	/^    def on_complete(self):$/;"	m	class:ReallocationTask
+on_complete	tasks.py	/^    def on_complete(self):$/;"	m	class:RequeueTask
+on_complete	tasks.py	/^    def on_complete(self):$/;"	m	class:Task
+on_complete	tasks.py	/^    def on_complete(self):$/;"	m	class:WorkSearchSpin
+on_complete	tasks.py	/^    def on_complete(self):$/;"	m	class:WorkStealTask
+park	work_search_state.py	/^    def park(self):$/;"	m	class:WorkSearchState
+parking	work_search_state.py	/^    def parking(self):$/;"	m	class:WorkSearchState
+path_to_sim	run_sim.py	/^    path_to_sim = os.path.relpath(pathlib.Path(__file__).resolve().parents[1], start=os.curdir)$/;"	v	class:SimProcess
+path_to_sim	simulation.py	/^    path_to_sim = os.path.relpath(pathlib.Path(__file__).resolve().parents[1], start=os.curdir)$/;"	v	class:Simulation
+print_progress	progress_bar.py	/^def print_progress(iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '*',$/;"	f
+process	tasks.py	/^    def process(self, time_increment=1):$/;"	m	class:FlagStealTask
+process	tasks.py	/^    def process(self, time_increment=1):$/;"	m	class:OracleWorkStealTask
+process	tasks.py	/^    def process(self, time_increment=1):$/;"	m	class:ReallocationTask
+process	tasks.py	/^    def process(self, time_increment=1):$/;"	m	class:WorkSearchSpin
+process	tasks.py	/^    def process(self, time_increment=1):$/;"	m	class:WorkStealTask
+process	tasks.py	/^    def process(self, time_increment=1, stop_condition=None):$/;"	m	class:EnqueuePenaltyTask
+process	tasks.py	/^    def process(self, time_increment=1, stop_condition=None):$/;"	m	class:RequeueTask
+process	tasks.py	/^    def process(self, time_increment=1, stop_condition=None):$/;"	m	class:Task
+process_logic	tasks.py	/^    def process_logic(self):$/;"	m	class:OracleWorkStealTask
+process_logic	tasks.py	/^    def process_logic(self):$/;"	m	class:Task
+process_logic	tasks.py	/^    def process_logic(self):$/;"	m	class:WorkStealTask
+process_task	sim_thread.py	/^    def process_task(self, time_increment=1):$/;"	m	class:Thread
+reallocate_threads	simulation.py	/^    def reallocate_threads(self):$/;"	m	class:Simulation
+reallocate_threads_buffer_cores	simulation.py	/^    def reallocate_threads_buffer_cores(self):$/;"	m	class:Simulation
+reallocate_threads_default	simulation.py	/^    def reallocate_threads_default(self):$/;"	m	class:Simulation
+reallocate_threads_delay_range	simulation.py	/^    def reallocate_threads_delay_range(self):$/;"	m	class:Simulation
+reallocate_threads_ideal	simulation.py	/^    def reallocate_threads_ideal(self):$/;"	m	class:Simulation
+reallocate_threads_utilization	simulation.py	/^    def reallocate_threads_utilization(self):$/;"	m	class:Simulation
+record_queue_lengths	simulation_state.py	/^    def record_queue_lengths(self):$/;"	m	class:SimulationState
+record_ws_check	simulation_state.py	/^    def record_ws_check(self, local_id, remote, check_count, successful=False):$/;"	m	class:SimulationState
+requeue_wait_time	tasks.py	/^    def requeue_wait_time(self):$/;"	m	class:Task
+reset	work_search_state.py	/^    def reset(self, clear_start_time=True):$/;"	m	class:WorkSearchState
+results	simulation_state.py	/^    def results(self):$/;"	m	class:SimulationState
+run	run_sim.py	/^    def run(self):$/;"	m	class:SimProcess
+run	simulation.py	/^    def run(self):$/;"	m	class:Simulation
+run_name	simulation.py	/^    run_name = SINGLE_THREAD_SIM_NAME_FORMAT.format(os.uname().nodename,$/;"	v	class:Simulation
+save_stats	simulation.py	/^    def save_stats(self):$/;"	m	class:Simulation
+schedule	sim_thread.py	/^    def schedule(self, time_increment=1):$/;"	m	class:Thread
+second	sim_queue.py	/^    def second(self):$/;"	m	class:Queue
+set_flags	sim_thread.py	/^    def set_flags(self):$/;"	m	class:Thread
+set_start_time	work_search_state.py	/^    def set_start_time(self):$/;"	m	class:WorkSearchState
+set_thread	sim_queue.py	/^    def set_thread(self, thread_id):$/;"	m	class:Queue
+set_threshold_time	sim_thread.py	/^    def set_threshold_time(self):$/;"	m	class:Thread
+set_ws_permutation	sim_config.py	/^    def set_ws_permutation(self):$/;"	m	class:SimConfig
+sim	simulation.py	/^    sim = Simulation(cfg, path_to_sim)$/;"	v	class:Simulation
+sort_by_arrival	sim_queue.py	/^    def sort_by_arrival(self):$/;"	m	class:Queue
+start_work_steal	tasks.py	/^    def start_work_steal(self):$/;"	m	class:WorkStealTask
+start_work_steal_check	tasks.py	/^    def start_work_steal_check(self, remote):$/;"	m	class:WorkStealTask
+swap_thread	sim_queue.py	/^    def swap_thread(self, current_thread, new_thread, get_lock=False):$/;"	m	class:Queue
+tail	sim_queue.py	/^    def tail(self):$/;"	m	class:Queue
+tasks_to_steal	tasks.py	/^    def tasks_to_steal(self):$/;"	m	class:FlagStealTask
+threads	run_sim.py	/^    threads = []$/;"	v	class:SimProcess
+threads_available_for_allocation	simulation_state.py	/^    def threads_available_for_allocation(self):$/;"	m	class:SimulationState
+threads_available_for_deallocation	simulation_state.py	/^    def threads_available_for_deallocation(self):$/;"	m	class:SimulationState
+time	run_sim.py	/^    time = datetime.now().strftime("%y-%m-%d_%H:%M:%S")$/;"	v	class:SimProcess
+time_in_system	tasks.py	/^    def time_in_system(self):$/;"	m	class:Task
+total_queue_occupancy	simulation_state.py	/^    def total_queue_occupancy(self):$/;"	m	class:SimulationState
+total_time	sim_thread.py	/^    def total_time(self):$/;"	m	class:Thread
+total_work_in_system	simulation_state.py	/^    def total_work_in_system(self):$/;"	m	class:SimulationState
+try_get_lock	sim_queue.py	/^    def try_get_lock(self, thread_id, get_lock=True):$/;"	m	class:Queue
+unlock	sim_queue.py	/^    def unlock(self, thread_id):$/;"	m	class:Queue
+update_check_counts	sim_queue.py	/^    def update_check_counts(self):$/;"	m	class:Queue
+validate	sim_config.py	/^    def validate(self):$/;"	m	class:SimConfig
+work_available	sim_queue.py	/^    def work_available(self):$/;"	m	class:Queue
+work_search_walk	tasks.py	/^    def work_search_walk(self):$/;"	m	class:WorkStealTask
+work_search_walk_random	tasks.py	/^    def work_search_walk_random(self):$/;"	m	class:WorkStealTask
+work_steal	tasks.py	/^    def work_steal(self):$/;"	m	class:AbstractWorkStealTask

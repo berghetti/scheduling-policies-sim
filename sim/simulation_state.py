@@ -343,11 +343,23 @@ class SimulationState:
         if config.join_bounded_shortest_queue:
             self.main_queue = Queue(-1, config, self)
 
+
+        # new_policy
+        # tot_threads > tot_queues
+        if config.new_policy_enable:
+            for i in range(config.num_threads):
+                if i < (len(set(config.mapping))):
+                    queue = self.queues[config.mapping[i]]
+                    self.threads.append(Thread(queue, i, config, self))
+                    queue.set_thread(i)
+                else:
+                    self.threads.append(Thread(-1, i, config, self))
+        else:
         # Initialize threads
-        for i in range(config.num_threads):
-            queue = self.queues[config.mapping[i]]
-            self.threads.append(Thread(queue, i, config, self))
-            queue.set_thread(i)
+            for i in range(config.num_threads):
+                queue = self.queues[config.mapping[i]]
+                self.threads.append(Thread(queue, i, config, self))
+                queue.set_thread(i)
 
         # Set siblings
         for i in range(config.num_threads):

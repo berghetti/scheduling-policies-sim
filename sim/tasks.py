@@ -257,7 +257,7 @@ class WorkSearchSpin(Task): # TODO: Check the preemption for double-counting
 
         # If checking local queue and work arrives, preempt
         elif self.thread.work_search_state == WorkSearchState.LOCAL_QUEUE_FIRST_CHECK and \
-                self.thread.queue.work_available():
+                self.thread.queue != -1 and self.thread.queue.work_available():
             self.preempted = True
             self.complete = True
 
@@ -430,12 +430,18 @@ class QueueCheckTask(Task):
     def __init__(self, thread, config, state, return_to_ws_task=None):
         super().__init__(config.LOCAL_QUEUE_CHECK_TIME, state.timer.get_time(), config, state)
         self.thread = thread
-        self.locked_out = not self.thread.queue.try_get_lock(self.thread.id)
+
         self.is_productive = False
         self.return_to_work_steal = return_to_ws_task is not None
         self.ws_task = return_to_ws_task
         self.start_work_search_spin = False
 
+        #new_policy change
+        if self.thread.queue == -1:
+            self.start_work_search_spin = True
+            return
+
+        self.locked_out = not self.thread.queue.try_get_lock(self.thread.id)
         # If no work stealing and there's nothing to get, start spin
         if not config.work_stealing_enabled and config.LOCAL_QUEUE_CHECK_TIME == 0 and \
                 not (self.thread.queue.work_available() or self.locked_out):
@@ -473,7 +479,7 @@ class QueueCheckTask(Task):
             self.thread.work_search_state.reset()
 
             if self.thread.last_allocation is not None:
-                self.state.alloc_to_task_time += (self.state.timer.get_time() - self.thread.last_allocation)
+                self.ttate.alloc_to_task_time += (self.state.timer.get_time() - self.thread.last_allocation)
                 self.thread.last_allocation = None
 
         # If no work and marked to return to a work steal task, do so
