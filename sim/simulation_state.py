@@ -387,6 +387,7 @@ class SimulationState:
                 else:
                     service_time = int(random.expovariate(1 / config.AVERAGE_SERVICE_TIME))
 
+            #print('SV {}'.format(service_time))
             self.tasks.append(Task(service_time, next_task_time, config, self))
             if config.regular_arrivals:
                 next_task_time += int(1 / request_rate)

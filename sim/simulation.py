@@ -52,6 +52,9 @@ class Simulation:
         if self.config.progress_bar:
             print("\nSimulation started")
 
+        print("\nNew policy enable? {}".format(self.config.new_policy_enable))
+
+
         # Run for acceptable time or until all tasks are done
         while self.state.any_incomplete() and \
                 (self.config.sim_duration is None or self.state.timer.get_time() < self.config.sim_duration):

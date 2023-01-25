@@ -16,7 +16,7 @@ class SimConfig:
                  enqueue_by_st_sum=False, always_check_realloc=False, ideal_flag_steal=False, delay_range_by_service_time=False,
                  ideal_reallocation=False, fred_reallocation=False, spin_parking_enabled=False, utilization_range_enabled=False,
                  allow_naive_idle=False, work_steal_park_enabled=False, bimodal_service_time=False, join_bounded_shortest_queue=False,
-                 record_queue_lens=False):
+                 record_queue_lens=False, new_policy_enable=False):
         # Basic configuration
         self.name = name
         self.description = ""
@@ -63,6 +63,8 @@ class SimConfig:
         self.bimodal_service_time = bimodal_service_time
         self.join_bounded_shortest_queue = join_bounded_shortest_queue
         self.record_queue_lens = record_queue_lens
+
+        self.new_policy_enable = new_policy_enable
 
         # Constants
         self.AVERAGE_SERVICE_TIME = 1000
@@ -180,6 +182,11 @@ class SimConfig:
                 (self.sim_duration is not None and self.sim_duration <= 0):
             print("There must be at least one way to decide when the simulation is over")
             return False
+
+        if self.new_policy_enable and (self.work_stealing_enabled or self.enqueue_choice):
+            print("Only one policy can be active once")
+            return False
+
 
         return True
 

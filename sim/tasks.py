@@ -65,7 +65,11 @@ class Task:
 
     def process_logic(self):
         """Any processing that must be done with the decremented timer but before the time left is checked."""
-        pass
+        if self.service_time == 5500:
+            print(vars(self))
+        #    print('Thread {} deixou orfa a queue'.format(self.thread.id, self.thread.queue))
+        #    self.thread.queue.is_orphan = True
+        #    self.thread.queue = -1
 
     def on_complete(self):
         """Complete the task and do any necessary accounting."""
@@ -437,14 +441,13 @@ class QueueCheckTask(Task):
         self.start_work_search_spin = False
 
         #new_policy change
-        if self.thread.queue == -1:
-            self.start_work_search_spin = True
-            return
+        self.locked_out = False
 
-        self.locked_out = not self.thread.queue.try_get_lock(self.thread.id)
+        if self.thread.queue != -1:
+            self.locked_out = not self.thread.queue.try_get_lock(self.thread.id)
         # If no work stealing and there's nothing to get, start spin
         if not config.work_stealing_enabled and config.LOCAL_QUEUE_CHECK_TIME == 0 and \
-                not (self.thread.queue.work_available() or self.locked_out):
+                not ((self.thread.queue != -1 and self.thread.queue.work_available()) or self.locked_out):
             if not config.allow_naive_idle:
                 self.start_work_search_spin = True
             else:

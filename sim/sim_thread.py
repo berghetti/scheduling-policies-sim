@@ -240,6 +240,7 @@ class Thread:
             # search by orphan queues
             for queue in self.state.queues:
                 if queue.is_orphan:
+                    print('thread {} adopt queues {}'.format(self.id, queue))
                     self.queue = queue
                     break
 
@@ -277,6 +278,7 @@ class Thread:
                 self.current_task = QueueCheckTask(self, self.config, self.state)
                 self.work_search_state.set_start_time()
 
+            print(self.current_task)
             self.process_task()
 
         # Then try stealing
