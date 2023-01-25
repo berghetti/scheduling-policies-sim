@@ -8,4 +8,9 @@ python3 ./sim/simulation.py $1 $2
 
 
 FILE=$(tail -n 1 ./results/meta_log | awk -F': ' '{print $1}')
-python3 analysis.py $FILE "${FILE}_${$2}_out.csv" 0
+FILE_OUT="${FILE}_$2_out.csv"
+python3 analysis.py $FILE $FILE_OUT 0
+
+awk -F, '{print($11 "," $9 "," $10 "," $12)}' $FILE_OUT | column --separator , -t
+
+
