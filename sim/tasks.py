@@ -488,6 +488,7 @@ class QueueCheckTask(Task):
         if self.config.new_policy_enable and self.thread.queue == -1:
             logging.info('Start watchdog thread {}'.format(self.thread))
             self.thread.current_task = watchdog_orphan_queue(self.thread, self.config, self.state)
+
         # Start work search spin if marked to do so
         elif self.start_work_search_spin:
             self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)

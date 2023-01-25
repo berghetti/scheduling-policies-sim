@@ -1,3 +1,4 @@
 results/*
 config_records/*
 *.pyc
+*out.csv
