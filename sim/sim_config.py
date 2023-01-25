@@ -64,7 +64,9 @@ class SimConfig:
         self.join_bounded_shortest_queue = join_bounded_shortest_queue
         self.record_queue_lens = record_queue_lens
 
+        #new_policy configs
         self.new_policy_enable = new_policy_enable
+        self.OVERHEAD_SEARCH_ORPHAN_QUEUE = 5000
 
         # Constants
         self.AVERAGE_SERVICE_TIME = 1000
@@ -183,8 +185,13 @@ class SimConfig:
             print("There must be at least one way to decide when the simulation is over")
             return False
 
+        #new policy validate
         if self.new_policy_enable and (self.work_stealing_enabled or self.enqueue_choice):
             print("Only one policy can be active once")
+            return False
+
+        if self.new_policy_enable and not (self.num_threads > self.num_queues):
+            print("New_police need more thread than queues")
             return False
 
 

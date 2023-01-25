@@ -65,8 +65,7 @@ class Task:
 
     def process_logic(self):
         """Any processing that must be done with the decremented timer but before the time left is checked."""
-        if self.service_time == 5500:
-            print(vars(self))
+        pass
         #    print('Thread {} deixou orfa a queue'.format(self.thread.id, self.thread.queue))
         #    self.thread.queue.is_orphan = True
         #    self.thread.queue = -1
@@ -233,6 +232,30 @@ class ReallocationTask(Task):
         return "Reallocation Task (arrival {}, duration {})".format(
             self.arrival_time, self.service_time)
 
+class watchdog_orphan_queue(Task):
+
+    def __init__(self, thread, config, state):
+        super().__init__(config.OVERHEAD_SEARCH_ORPHAN_QUEUE, state.timer.get_time(), config, state)
+        self.thread = thread
+
+    def process(self, time_increment=1):
+        "only spent time. This is overhead of search orphan queue"
+        super().process(time_increment=time_increment)
+
+    def on_complete(self):
+        "After overhead time is spent, try locate a orphan queue"
+        #pass
+        #search by orphan queues
+        for queue in self.state.queues:
+           if queue.is_orphan:
+               logging.info('Watchdog thread {} adopt queue {}'.format(self.thread.id, queue))
+               self.thread.queue = queue
+               self.thread.queue.is_orphan = False
+               break
+
+    def descriptor(self):
+        return "Search orphan queue task (arrival {}, duration {})".format(
+            self.arrival_time, self.service_time)
 
 class WorkSearchSpin(Task): # TODO: Check the preemption for double-counting
     """Task to spin a thread (not idle, but preemptable) if there is nothing else to do."""
@@ -446,8 +469,9 @@ class QueueCheckTask(Task):
         if self.thread.queue != -1:
             self.locked_out = not self.thread.queue.try_get_lock(self.thread.id)
         # If no work stealing and there's nothing to get, start spin
-        if not config.work_stealing_enabled and config.LOCAL_QUEUE_CHECK_TIME == 0 and \
-                not ((self.thread.queue != -1 and self.thread.queue.work_available()) or self.locked_out):
+        if self.thread.queue == -1 or \
+                (not config.work_stealing_enabled and config.LOCAL_QUEUE_CHECK_TIME == 0 and \
+                not (self.thread.queue.work_available() or self.locked_out) ):
             if not config.allow_naive_idle:
                 self.start_work_search_spin = True
             else:
@@ -455,11 +479,17 @@ class QueueCheckTask(Task):
                 self.time_left = 1
                 self.is_idle = True
 
+        #print('Create task on thread {} with queue {}'.format(self.thread.id, self.thread.queue.id))
+
     def on_complete(self):
         """Grab new task from queue if available."""
 
+        #new_policy
+        if self.config.new_policy_enable and self.thread.queue == -1:
+            logging.info('Start watchdog thread {}'.format(self.thread))
+            self.thread.current_task = watchdog_orphan_queue(self.thread, self.config, self.state)
         # Start work search spin if marked to do so
-        if self.start_work_search_spin:
+        elif self.start_work_search_spin:
             self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
 
         # If locked out, just advance to next state
@@ -476,7 +506,7 @@ class QueueCheckTask(Task):
                 self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
 
         # If work is available, take it
-        elif self.thread.queue.work_available():
+        elif self.thread.queue != -1 and self.thread.queue.work_available():
             self.thread.current_task = self.thread.queue.dequeue()
             self.thread.queue.unlock(self.thread.id)
             self.thread.work_search_state.reset()
@@ -484,6 +514,14 @@ class QueueCheckTask(Task):
             if self.thread.last_allocation is not None:
                 self.ttate.alloc_to_task_time += (self.state.timer.get_time() - self.thread.last_allocation)
                 self.thread.last_allocation = None
+
+            if self.config.new_policy_enable and \
+               self.thread.current_task.service_time == 100000:
+                    logging.info('Thread {} received LONG_REQUEST '\
+                          'leaving queue {} orphan'.\
+                           format(self.thread.id, self.thread.queue.id))
+                    self.thread.queue.is_orphan = True
+                    self.thread.queue = -1
 
         # If no work and marked to return to a work steal task, do so
         elif self.return_to_work_steal:

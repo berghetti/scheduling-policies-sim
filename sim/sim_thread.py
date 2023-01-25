@@ -235,15 +235,6 @@ class Thread:
     def schedule(self, time_increment=1):
         """Determine how to spend the thread's time."""
 
-        #new_policy
-        if self.config.new_policy_enable and self.queue == -1:
-            # search by orphan queues
-            for queue in self.state.queues:
-                if queue.is_orphan:
-                    print('thread {} adopt queues {}'.format(self.id, queue))
-                    self.queue = queue
-                    break
-
         # Work on current task if there is one
         if self.is_busy():
             # Only non-new tasks should use the time_increment (new ones did not exist before this cycle)
@@ -278,7 +269,7 @@ class Thread:
                 self.current_task = QueueCheckTask(self, self.config, self.state)
                 self.work_search_state.set_start_time()
 
-            print(self.current_task)
+            #print(self.current_task)
             self.process_task()
 
         # Then try stealing

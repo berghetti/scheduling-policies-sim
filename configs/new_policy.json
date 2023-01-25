@@ -73,6 +73,7 @@
  "record_queue_lens": false,
 
  "new_policy_enable": true,
+ "OVERHEAD_SEARCH_ORPHAN_QUEUE": 5000,
 
  "AVERAGE_SERVICE_TIME": 1000,
  "WORK_STEAL_CHECK_TIME": 100,

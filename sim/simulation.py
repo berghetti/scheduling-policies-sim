@@ -34,6 +34,11 @@ class Simulation:
     def run(self):
         """Run the simulation."""
 
+        #new_policy check
+        print("\nNew policy enable? {}".format(self.config.new_policy_enable))
+        if self.config.new_policy_enable:
+            print('Overhead search orphan queue: {}'.format(self.config.OVERHEAD_SEARCH_ORPHAN_QUEUE))
+
         # Initialize data
         self.state.initialize_state(self.config)
 
@@ -51,9 +56,6 @@ class Simulation:
 
         if self.config.progress_bar:
             print("\nSimulation started")
-
-        print("\nNew policy enable? {}".format(self.config.new_policy_enable))
-
 
         # Run for acceptable time or until all tasks are done
         while self.state.any_incomplete() and \
@@ -500,6 +502,11 @@ if __name__ == "__main__":
         if "-d" in sys.argv:
             logging.basicConfig(level=logging.DEBUG, format='%(levelname)s:%(message)s')
             sys.argv.remove("-d")
+
+        #new police custom debug
+        if "-npd" in sys.argv:
+            logging.basicConfig(level=logging.INFO, format='%(filename)s:%(lineno)s| %(message)s')
+            sys.argv.remove("-npd")
 
         if len(sys.argv) > 2:
             if not os.path.isdir(RESULTS_DIR.format(path_to_sim)):
