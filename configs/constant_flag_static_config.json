@@ -53,7 +53,7 @@
  "allocation_delay": true,
  "two_choices": false,
  "oracle_enabled": false,
- "delay_flagging_enabled": false,
+ "delay_flagging_enabled": true,
  "enqueue_choice": true,
  "random_work_steal_search": false,
  "regular_arrivals": false,
