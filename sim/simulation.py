@@ -35,7 +35,7 @@ class Simulation:
         """Run the simulation."""
 
         #new_policy check
-        print("\nNew policy enable? {}".format(self.config.new_policy_enable))
+        print("\nNew policy enable? {}".format(self.config.persephone_enable))
         if self.config.new_policy_enable:
             print('Overhead search orphan queue: {}'.format(self.config.OVERHEAD_SEARCH_ORPHAN_QUEUE))
 
@@ -90,6 +90,13 @@ class Simulation:
                         self.state.queues[chosen_queue].awaiting_enqueue = True
                         self.state.tasks[task_number].to_enqueue = chosen_queue
                     self.state.queues[source_core].enqueue(self.state.tasks[task_number], set_original=True)
+
+                elif self.config.persephone_enable:
+                    chosen_queue = self.persephone_select_worker_core(self.state.tasks[task_number])
+
+                    # add overhead persephone in all requests
+                    self.state.tasks[task_number].service_time += self.config.PERSEPHONE_OVERHEAD
+                    self.state.queues[chosen_queue].enqueue(self.state.tasks[task_number], set_original=True)
 
                 else:
                     chosen_queue = random.choice(self.state.available_queues)
@@ -156,6 +163,25 @@ class Simulation:
 
         # When the simulation is complete, record final stats
         self.state.add_final_stats()
+
+    def persephone_select_worker_core(self, task):
+        # https://github.com/maxdml/psp/blob/psp/src/c%2B%2B/libos/su/dispatch_su.cc#L374
+        # first search in reserved threads
+        #if task.service_time == self.config.SHORT_REQUEST_SERVICE_TIME:
+        #    for thread in self.state.threads:
+        #        if thread.persephone_reserved and not thread.is_productive():
+        #            #print("Using reserved cores")
+        #            return thread.queue.id
+
+        # search all threads
+        for thread in self.state.threads:
+            #if not thread.persephone_reserved and \
+             if not thread.is_productive(): #thread free
+                #print("Stealing cycles" if task.service_time == self.config.SHORT_REQUEST_SERVICE_TIME else "")
+                return thread.queue.id
+
+        #print('returning spill')
+        return 0
 
     def choose_enqueue(self, num_choices):
         """Choose a queue to place a new task on by current queueing delay."""

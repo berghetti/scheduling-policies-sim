@@ -517,7 +517,7 @@ class QueueCheckTask(Task):
                 self.thread.last_allocation = None
 
             if self.config.new_policy_enable and \
-               self.thread.current_task.service_time == 100000:
+               self.thread.current_task.service_time == self.config.LONG_REQUEST_SERVICE_TIME:
                     logging.info('Thread {} received LONG_REQUEST '\
                           'leaving queue {} orphan'.\
                            format(self.thread.id, self.thread.queue.id))

@@ -343,6 +343,7 @@ class SimulationState:
         if config.join_bounded_shortest_queue:
             self.main_queue = Queue(-1, config, self)
 
+        # Initialize threads
 
         # new_policy
         # tot_threads > tot_queues
@@ -355,11 +356,15 @@ class SimulationState:
                 else:
                     self.threads.append(Thread(-1, i, config, self))
         else:
-        # Initialize threads
             for i in range(config.num_threads):
                 queue = self.queues[config.mapping[i]]
                 self.threads.append(Thread(queue, i, config, self))
                 queue.set_thread(i)
+
+        # static persephone reserved cores
+        if config.persephone_enable:
+            for i in range(config.persephone_total_reserved_cores):
+                self.threads[i].persephone_reserved = True
 
         # Set siblings
         for i in range(config.num_threads):
@@ -374,7 +379,7 @@ class SimulationState:
         request_rate = config.avg_system_load * config.load_thread_count / config.AVERAGE_SERVICE_TIME
         next_task_time = int(1/request_rate) if config.regular_arrivals else int(random.expovariate(request_rate))
         if config.bimodal_service_time:
-            distribution = [500] * 9 + [100000]
+            distribution = [config.SHORT_REQUEST_SERVICE_TIME] * 200 + [config.LONG_REQUEST_SERVICE_TIME]
         i = 0
         while (config.sim_duration is None or next_task_time < config.sim_duration) and \
                 (config.num_tasks is None or i < config.num_tasks):

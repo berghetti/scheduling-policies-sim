@@ -16,7 +16,7 @@ class SimConfig:
                  enqueue_by_st_sum=False, always_check_realloc=False, ideal_flag_steal=False, delay_range_by_service_time=False,
                  ideal_reallocation=False, fred_reallocation=False, spin_parking_enabled=False, utilization_range_enabled=False,
                  allow_naive_idle=False, work_steal_park_enabled=False, bimodal_service_time=False, join_bounded_shortest_queue=False,
-                 record_queue_lens=False, new_policy_enable=False):
+                 record_queue_lens=False, new_policy_enable=False, persephone_enable=False, persephone_total_reserved_cores=None):
         # Basic configuration
         self.name = name
         self.description = ""
@@ -67,6 +67,16 @@ class SimConfig:
         #new_policy configs
         self.new_policy_enable = new_policy_enable
         self.OVERHEAD_SEARCH_ORPHAN_QUEUE = 5000
+
+        # persephone
+        self.persephone_enable = persephone_enable
+        self.persephone_total_reserved_cores = persephone_total_reserved_cores
+
+        self.PERSEPHONE_OVERHEAD = 200
+
+        # to bimodal distribuitions
+        self.SHORT_REQUEST_SERVICE_TIME = 500 # 0.5us
+        self.LONG_REQUEST_SERVICE_TIME = 100000 # 100us
 
         # Constants
         self.AVERAGE_SERVICE_TIME = 1000
@@ -185,13 +195,24 @@ class SimConfig:
             print("There must be at least one way to decide when the simulation is over")
             return False
 
+        total_policys_active = self.work_stealing_enabled
+        total_policys_active += self.enqueue_choice
+        total_policys_active += self.delay_flagging_enabled
+        total_policys_active += self.new_policy_enable
+        total_policys_active += self.persephone_enable
+
         #new policy validate
-        if self.new_policy_enable and (self.work_stealing_enabled or self.enqueue_choice):
+        if total_policys_active > 1:
             print("Only one policy can be active once")
             return False
 
         if self.new_policy_enable and not (self.num_threads > self.num_queues):
             print("New_police need more thread than queues")
+            return False
+
+        #persephone
+        if self.persephone_enable and self.num_queues != self.num_threads:
+            print("Num queues in persephone should be equal number of cores")
             return False
 
 
