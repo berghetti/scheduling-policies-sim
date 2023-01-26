@@ -13,4 +13,6 @@ python3 analysis.py $FILE $FILE_OUT 0
 
 awk -F, '{print($11 "," $9 "," $12 "," $10)}' $FILE_OUT | column --separator , -t
 
+tail -n 1 ${FILE_OUT} >> exp_out.csv
+
 

@@ -1,6 +1,6 @@
 {
  "avg_system_load": 0.5,
- "num_queues": 32,
+ "num_queues": 31,
  "num_threads": 32,
  "mapping": [
  0,
@@ -33,8 +33,7 @@
  27,
  28,
  29,
- 30,
- 31
+ 30
 ],
  "load_thread_count": 32,
  "num_tasks": null,
@@ -49,13 +48,13 @@
  "record_steals": false,
  "buffer_cores_enabled": false,
  "delay_range_enabled": false,
- "ws_self_checks": true,
+ "ws_self_checks": false,
  "allocation_delay": true,
  "two_choices": false,
  "oracle_enabled": false,
  "delay_flagging_enabled": false,
- "enqueue_choice": true,
- "random_work_steal_search": true,
+ "enqueue_choice": false,
+ "random_work_steal_search": false,
  "regular_arrivals": false,
  "constant_service_time": false,
  "ws_sibling_first": false,
@@ -68,10 +67,14 @@
  "spin_parking_enabled": false,
  "utilization_range_enabled": false,
  "allow_naive_idle": false,
- "work_steal_park_enabled": true,
- "bimodal_service_time": false,
+ "work_steal_park_enabled": false,
+ "bimodal_service_time": true,
  "join_bounded_shortest_queue": false,
  "record_queue_lens": false,
+
+ "new_policy_enable": true,
+ "OVERHEAD_SEARCH_ORPHAN_QUEUE": 5000,
+
  "AVERAGE_SERVICE_TIME": 1000,
  "WORK_STEAL_CHECK_TIME": 100,
  "WORK_STEAL_TIME": 100,
