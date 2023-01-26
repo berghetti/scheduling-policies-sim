@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Run one simulation
+
 if [ "$#" -ne 2 ]; then
     echo "Usage $0 config.json description"
 fi
@@ -12,7 +14,5 @@ FILE_OUT="${FILE}_$2_out.csv"
 python3 analysis.py $FILE $FILE_OUT 0
 
 awk -F, '{print($11 "," $9 "," $12 "," $10)}' $FILE_OUT | column --separator , -t
-
-tail -n 1 ${FILE_OUT} >> exp_out.csv
 
 
