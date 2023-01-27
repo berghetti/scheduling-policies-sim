@@ -232,11 +232,13 @@ class ReallocationTask(Task):
         return "Reallocation Task (arrival {}, duration {})".format(
             self.arrival_time, self.service_time)
 
-class watchdog_orphan_queue(Task):
+class new_policy_watchdog_core_task(Task):
 
     def __init__(self, thread, config, state):
         super().__init__(config.OVERHEAD_SEARCH_ORPHAN_QUEUE, state.timer.get_time(), config, state)
         self.thread = thread
+
+        #logging.info('Watchdog')
 
     def process(self, time_increment=1):
         "only spent time. This is overhead of search orphan queue"
@@ -247,6 +249,7 @@ class watchdog_orphan_queue(Task):
         #pass
         #search by orphan queues
         for queue in self.state.queues:
+           #print(queue)
            if queue.is_orphan:
                logging.info('Watchdog thread {} adopt queue {}'.format(self.thread.id, queue))
                self.thread.queue = queue
@@ -463,6 +466,9 @@ class persephone_dispatcher_task(Task):
     def on_complete(self):
         "Dispatch requests to worker cores, similiar algorithm 1 on paper"
 
+        if not self.thread.queue.work_available():
+            return
+
         worker = None
         request = self.thread.queue.dequeue()
 
@@ -507,13 +513,12 @@ class QueueCheckTask(Task):
         self.start_work_search_spin = False
 
         #new_policy change
-        self.locked_out = False
+        #self.locked_out = False
 
-        if self.thread.queue != -1:
-            self.locked_out = not self.thread.queue.try_get_lock(self.thread.id)
+        #if self.thread.queue != -1:
+        self.locked_out = not self.thread.queue.try_get_lock(self.thread.id)
         # If no work stealing and there's nothing to get, start spin
-        if self.thread.queue == -1 or \
-                (not config.work_stealing_enabled and config.LOCAL_QUEUE_CHECK_TIME == 0 and \
+        if (not config.work_stealing_enabled and config.LOCAL_QUEUE_CHECK_TIME == 0 and \
                 not (self.thread.queue.work_available() or self.locked_out) ):
             if not config.allow_naive_idle:
                 self.start_work_search_spin = True
@@ -528,12 +533,12 @@ class QueueCheckTask(Task):
         """Grab new task from queue if available."""
 
         #new_policy
-        if self.config.new_policy_enable and self.thread.queue == -1:
-            logging.info('Start watchdog thread {}'.format(self.thread))
-            self.thread.current_task = watchdog_orphan_queue(self.thread, self.config, self.state)
+        #if self.config.new_policy_enable and self.thread.queue == -1:
+        #    logging.info('Start watchdog thread {}'.format(self.thread))
+        #    self.thread.current_task = watchdog_orphan_queue(self.thread, self.config, self.state)
 
         # Start work search spin if marked to do so
-        elif self.start_work_search_spin:
+        if self.start_work_search_spin:
             self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
 
         # If locked out, just advance to next state
@@ -550,7 +555,7 @@ class QueueCheckTask(Task):
                 self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
 
         # If work is available, take it
-        elif self.thread.queue != -1 and self.thread.queue.work_available():
+        elif self.thread.queue.work_available():
             self.thread.current_task = self.thread.queue.dequeue()
             self.thread.queue.unlock(self.thread.id)
             self.thread.work_search_state.reset()
