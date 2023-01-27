@@ -11,13 +11,15 @@ TASK_FILE_NAME = "task_times.csv"
 META_FILE_NAME = "meta.json"
 STATS_FILE_NAME = "stats.json"
 CSV_HEADER = "Run ID,Cores,Sim Duration,Average Task Duration,Load,CPU Load,Task Load,Work Steal Load," \
-             "95% Tail Latency,99.9% Tail Latency,Median Latency,99% Tail Latency,Slowdown 99%,Slowdown99.9%,Tasks Stolen,Average Number of Steals,Throughput," \
+             "95% Tail Latency,99.9% Tail Latency,Median Latency,99% Tail Latency,Slowdown 99%,Slowdown99.9%,latency_short 99.9%,latency_long 99.9%," \
+             "Tasks Stolen,Average Number of Steals,Throughput," \
              "Real Load, Parks Per Second,Successful Work Steal Time,Unsuccessful Work Steal Time,Non Work Conserving Time,Allocation Time," \
              "Task Time,Distracted Time,Unpaired Time,Paired Time,Average Requeue Wait Time,Flag Task Time,Avg Time From Alloc to Task," \
              "Avg Steals Per Task,Flag Response Rate,Flag Rate,Tasks Flag Stolen,Average Steals Per Flag,Avg Core Flag Wait Time," \
              "Avg Task Flag Wait Time,Avg Queueing Time,Avg High Latency Task Flag Wait Time,Avg Flag Set Delay Time,Avg High Latency Flag Set Delay Time," \
              "Avg Flagged Task Service Time,Avg Flagged Task Time Left,Pct Flagged Queues Non-empty,Description"
 
+LONG_REQUEST_SERVICE_TIME = 100000
 
 def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
     cpu_file = open(RESULTS_SUBDIR_NAME.format(run_name) + CPU_FILE_NAME, "r")
@@ -78,6 +80,8 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
 
     # Task Stats
     task_latencies = []
+    task_latencies_short = []
+    task_latencies_long = []
     task_slowdown = []
     flagged_task_service_times = []
     flagged_task_time_left = []
@@ -98,6 +102,12 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
         if int(data[0]) > time_dropped * stats["End Time"] and int(data[1]) >= 0:
             total_tasks += 1
             task_latencies.append(int(data[1]))
+
+            if int(data[2]) == LONG_REQUEST_SERVICE_TIME:
+                task_latencies_long.append(int(data[1]))
+            else:
+                task_latencies_short.append(int(data[1]))
+
             task_slowdown.append( int(data[1]) / int(data[2]) )
             total_queueing_time += (int(data[1])) - int(data[2])
             total_requeue_wait_time += int(data[9])
@@ -118,7 +128,10 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
                 flagged_task_time_left.append(int(data[14]))
 
     percentiles = np.percentile(task_latencies, [95, 99.9, 50, 99])
+    percentiles_long_requests = np.percentile(task_latencies_long, 99.9)
+    percentiles_short_requests = np.percentile(task_latencies_short, 99.9)
     slowdown_percentiles = np.percentile(task_slowdown, [99, 99.9])
+
 
     ## 99.9% Tail Flag Stats
     tasks_stolen_999 = 0
@@ -174,7 +187,8 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
     data_string = "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}".format(
         run_name[4:], meta_data["num_threads"], meta_data["sim_duration"], meta_data["AVERAGE_SERVICE_TIME"],
         meta_data["avg_system_load"], avg_load * 100, avg_task_load * 100, avg_ws_load * 100, percentiles[0],
-        percentiles[1], percentiles[2], percentiles[3], slowdown_percentiles[0], slowdown_percentiles[1], percent_stolen * 100, avg_steals, throughput, real_load * 100,
+        percentiles[1], percentiles[2], percentiles[3], slowdown_percentiles[0], slowdown_percentiles[1], percentiles_short_requests, percentiles_long_requests,
+        percent_stolen * 100, avg_steals, throughput, real_load * 100,
         (stats["Global Park Count"]/stats["End Time"]) * 10**9, successful_ws_time, unsuccessful_ws_time, non_work_conserving_time,
         allocation_time, task_time, distracted_time, unpaired_time, paired_time, avg_requeue_wait_time, flag_task_time, avg_time_from_alloc_to_task,
         avg_flag_steals_per_task, flag_steal_rate, flag_rate, percent_flag_stolen * 100, average_steals_per_flag,

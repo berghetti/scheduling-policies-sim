@@ -1,5 +1,5 @@
 {
- "avg_system_load": 0.8,
+ "avg_system_load": 0.5,
  "num_queues": 32,
  "num_threads": 32,
  "mapping": [
@@ -37,8 +37,8 @@
  31
 ],
  "load_thread_count": 32,
- "num_tasks": null,
- "sim_duration": 50000000,
+ "num_tasks": 20000,
+ "sim_duration": 10000000,
  "locking_enabled": false,
  "work_stealing_enabled": false,
  "parking_enabled": false,
@@ -56,7 +56,7 @@
  "delay_flagging_enabled": false,
  "enqueue_choice": false,
  "random_work_steal_search": false,
- "regular_arrivals": false,
+ "regular_arrivals": true,
  "constant_service_time": false,
  "ws_sibling_first": false,
  "enqueue_by_st_sum": false,
@@ -83,7 +83,7 @@
  "SHORT_REQUEST_SERVICE_TIME": 1000,
  "LONG_REQUEST_SERVICE_TIME": 100000,
 
- "AVERAGE_SERVICE_TIME": 50500,
+ "AVERAGE_SERVICE_TIME": 1000,
  "WORK_STEAL_CHECK_TIME": 100,
  "WORK_STEAL_TIME": 100,
  "MINIMUM_WORK_SEARCH_TIME": 3100,
