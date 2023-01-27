@@ -81,6 +81,8 @@ class Task:
 
     def time_in_system(self):
         """Returns time that the task has been in the system (arrival to completion)."""
+        if (self.completion_time - self.arrival_time + 1) < 0:
+            print('Error: {}'.format(self.completion_time, self.arrival_time))
         return self.completion_time - self.arrival_time + 1
 
     def requeue_wait_time(self):
