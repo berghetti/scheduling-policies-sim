@@ -35,9 +35,9 @@ class Simulation:
         """Run the simulation."""
 
         #new_policy check
-        print("\nNew policy enable? {}".format(self.config.persephone_enable))
-        if self.config.new_policy_enable:
-            print('Overhead search orphan queue: {}'.format(self.config.OVERHEAD_SEARCH_ORPHAN_QUEUE))
+        #print(self.config.persephone_enable))
+        #if self.config.new_policy_enable:
+        #    print('Overhead search orphan queue: {}'.format(self.config.OVERHEAD_SEARCH_ORPHAN_QUEUE))
 
         # Initialize data
         self.state.initialize_state(self.config)
@@ -93,9 +93,6 @@ class Simulation:
 
                 elif self.config.persephone_enable:
                     chosen_queue = self.persephone_get_queue_dispatcher()
-
-                    # add overhead persephone in all requests
-                    self.state.tasks[task_number].service_time += self.config.PERSEPHONE_OVERHEAD
                     self.state.queues[chosen_queue].enqueue(self.state.tasks[task_number], set_original=True)
 
                 else:

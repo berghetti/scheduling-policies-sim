@@ -1,4 +1,5 @@
 results/*
+*tags*
 *out*
 *lock*
 *.pyc
