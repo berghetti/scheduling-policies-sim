@@ -145,6 +145,10 @@ class Queue:
             return task
         return self.queue.pop(0)
 
+    def reenqueue_head(self, task):
+        "reenqueue task on head of queue"
+        self.queue.insert(0, task)
+
     def length(self, count_current=False):
         """Return the length of the queue."""
         if count_current:

@@ -4,7 +4,7 @@
 import random
 import logging
 from work_search_state import WorkSearchState
-from tasks import WorkSearchSpin, WorkStealTask, Task, EnqueuePenaltyTask, RequeueTask, ReallocationTask, FlagStealTask, QueueCheckTask, OracleWorkStealTask, IdleTask
+from tasks import WorkSearchSpin, WorkStealTask, Task, EnqueuePenaltyTask, RequeueTask, ReallocationTask, FlagStealTask, QueueCheckTask, OracleWorkStealTask, IdleTask, persephone_dispatcher_task
 
 
 class Thread:
@@ -61,6 +61,7 @@ class Thread:
         self.last_allocation = None
         self.non_work_conserving_time = 0
 
+        self.persephone_dispatcher = False
         self.persephone_reserved = False
 
         self.config = config
@@ -252,6 +253,11 @@ class Thread:
         # If the thread must pay an enqueue penalty, do that before anything new
         elif self.enqueue_penalty > 0:
             self.current_task = EnqueuePenaltyTask(self, self.config, self.state)
+            self.process_task()
+
+        # persephone dispatcher
+        elif self.config.persephone_enable and self.persephone_dispatcher:
+            self.current_task = persephone_dispatcher_task(self, self.config, self.state)
             self.process_task()
 
         # If thread is allocating, start allocation task

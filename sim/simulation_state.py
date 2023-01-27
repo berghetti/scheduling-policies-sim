@@ -361,9 +361,11 @@ class SimulationState:
                 self.threads.append(Thread(queue, i, config, self))
                 queue.set_thread(i)
 
-        # static persephone reserved cores
+        # static persephone reserved cores and dispatcher core
         if config.persephone_enable:
-            for i in range(config.persephone_total_reserved_cores):
+            self.threads[0].persephone_dispatcher = True
+
+            for i in range(1, config.persephone_total_reserved_cores + 1):
                 self.threads[i].persephone_reserved = True
 
         # Set siblings

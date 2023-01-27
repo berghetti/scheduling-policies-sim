@@ -451,6 +451,49 @@ class OracleWorkStealTask(AbstractWorkStealTask):
             self.arrival_time, self.thread.id)
 
 
+class persephone_dispatcher_task(Task):
+    def __init__(self, thread, config, state ):
+        super().__init__(config.PERSEPHONE_OVERHEAD, state.timer.get_time(), config, state)
+        self.thread = thread
+
+    def process(self, time_increment=1):
+        "Only wait overhead time pass"
+        super().process(time_increment=time_increment)
+
+    def on_complete(self):
+        "Dispatch requests to worker cores, similiar algorithm 1 on paper"
+
+        worker = None
+        request = self.thread.queue.dequeue()
+
+        # search reserved cores
+        if request.service_time == self.state.config.SHORT_REQUEST_SERVICE_TIME:
+            for worker_core in self.state.threads:
+                if worker_core.id == self.thread.id: continue
+
+                # check if worker reserverd and free
+                if worker_core.persephone_reserved and not \
+                   worker_core.is_productive():
+                    worker = worker_core
+                    break
+
+        # search all cores less reserveds
+        if worker == None:
+            for worker_core in self.state.threads:
+                if worker_core.id == self.thread.id or \
+                   worker_core.persephone_reserved:
+                    continue
+
+                if not worker_core.is_productive():
+                    worker = worker_core
+                    break
+
+        if worker != None:
+            worker.queue.enqueue(request, set_original=True)
+        # No worker free, return request to dispatcher queue
+        else:
+            self.thread.queue.reenqueue_head(request)
+
 class QueueCheckTask(Task):
     """Task to check the local queue of a thread."""
 
