@@ -466,39 +466,39 @@ class persephone_dispatcher_task(Task):
     def on_complete(self):
         "Dispatch requests to worker cores, similiar algorithm 1 on paper"
 
-        if not self.thread.queue.work_available():
-            return
+        for queue in self.thread.persephone_queues:
+            if not queue.work_available(): continue
 
-        worker = None
-        request = self.thread.queue.dequeue()
+            worker = None
+            request = queue.dequeue()
 
-        # search reserved cores
-        if request.service_time == self.state.config.SHORT_REQUEST_SERVICE_TIME:
-            for worker_core in self.state.threads:
-                if worker_core.id == self.thread.id: continue
+            # search reserved cores
+            if request.service_time == self.state.config.SHORT_REQUEST_SERVICE_TIME:
+                for worker_core in self.state.threads:
+                    if worker_core.id == self.thread.id: continue
 
-                # check if worker reserverd and free
-                if worker_core.persephone_reserved and not \
-                   worker_core.is_productive():
-                    worker = worker_core
-                    break
+                    # check if worker reserverd and free
+                    if worker_core.persephone_reserved and not \
+                       worker_core.is_productive():
+                        worker = worker_core
+                        break
 
-        # search all cores less reserveds
-        if worker == None:
-            for worker_core in self.state.threads:
-                if worker_core.id == self.thread.id or \
-                   worker_core.persephone_reserved:
-                    continue
+            # search all cores less reserveds
+            if worker == None:
+                for worker_core in self.state.threads:
+                    if worker_core.id == self.thread.id or \
+                       worker_core.persephone_reserved:
+                        continue
 
-                if not worker_core.is_productive():
-                    worker = worker_core
-                    break
+                    if not worker_core.is_productive():
+                        worker = worker_core
+                        break
 
-        if worker != None:
-            worker.queue.enqueue(request, set_original=True)
-        # No worker free, return request to dispatcher queue
-        else:
-            self.thread.queue.reenqueue_head(request)
+            if worker != None:
+                worker.queue.enqueue(request, set_original=True)
+            # No worker free, return request to dispatcher queue
+            else:
+                queue.reenqueue_head(request)
 
 class QueueCheckTask(Task):
     """Task to check the local queue of a thread."""

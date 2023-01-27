@@ -364,6 +364,8 @@ class SimulationState:
         # static persephone reserved cores and dispatcher core
         if config.persephone_enable:
             self.threads[0].persephone_dispatcher = True
+            self.threads[0].persephone_queues.append(Queue(10, config, self))
+            self.threads[0].persephone_queues.append(Queue(20, config, self))
 
             for i in range(1, config.persephone_total_reserved_cores + 1):
                 self.threads[i].persephone_reserved = True

@@ -62,6 +62,7 @@ class Thread:
         self.non_work_conserving_time = 0
 
         self.persephone_dispatcher = False
+        self.persephone_queues = []
         self.persephone_reserved = False
 
         self.config = config
