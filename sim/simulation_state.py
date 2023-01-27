@@ -381,7 +381,7 @@ class SimulationState:
         request_rate = config.avg_system_load * config.load_thread_count / config.AVERAGE_SERVICE_TIME
         next_task_time = int(1/request_rate) if config.regular_arrivals else int(random.expovariate(request_rate))
         if config.bimodal_service_time:
-            distribution = [config.SHORT_REQUEST_SERVICE_TIME] * 200 + [config.LONG_REQUEST_SERVICE_TIME]
+            distribution = [config.SHORT_REQUEST_SERVICE_TIME] * 199 + [config.LONG_REQUEST_SERVICE_TIME]
         i = 0
         while (config.sim_duration is None or next_task_time < config.sim_duration) and \
                 (config.num_tasks is None or i < config.num_tasks):
