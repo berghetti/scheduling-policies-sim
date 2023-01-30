@@ -354,36 +354,54 @@ class SimulationState:
                     self.threads.append(Thread(queue, i, config, self))
                     queue.set_thread(i)
                 else:
+                    #queue.set_thread(i)
                     self.threads.append(Thread(-1, i, config, self))
+
+        elif config.new_policy2_enable:
+            fat_queue = Queue(100, config, self)
+            for i in range(config.num_threads):
+                if i < (len(set(config.mapping))):
+                    queue = self.queues[config.mapping[i]]
+                    self.threads.append(Thread(queue, i, config, self))
+                    queue.set_thread(i)
+
+            for thread in self.threads:
+                fat_queue.set_thread(thread.id)
+                thread.set_fat_queue(fat_queue)
+
         else:
             for i in range(config.num_threads):
                 queue = self.queues[config.mapping[i]]
                 self.threads.append(Thread(queue, i, config, self))
                 queue.set_thread(i)
 
+
+
         # static persephone reserved cores and dispatcher core
         if config.persephone_enable:
             self.threads[0].persephone_dispatcher = True
             self.threads[0].persephone_queues.append(Queue(10, config, self))
+            self.threads[0].persephone_queues[0].set_thread(0)
             self.threads[0].persephone_queues.append(Queue(20, config, self))
+            self.threads[0].persephone_queues[1].set_thread(0)
 
             for i in range(1, config.persephone_total_reserved_cores + 1):
                 self.threads[i].persephone_reserved = True
 
         # Set siblings
-        for i in range(config.num_threads):
-            if config.num_threads % 2 == 1 and config.num_threads-1 == i:
-                self.threads[i].sibling = None
-            elif i % 2 == 0:
-                self.threads[i].sibling = self.threads[i + 1]
-            else:
-                self.threads[i].sibling = self.threads[i - 1]
+        #for i in range(config.num_threads):
+        #    if config.num_threads % 2 == 1 and config.num_threads-1 == i:
+        #        self.threads[i].sibling = None
+        #    elif i % 2 == 0:
+        #        self.threads[i].sibling = self.threads[i + 1]
+        #    else:
+        #        self.threads[i].sibling = self.threads[i - 1]
 
         # Set tasks and arrival times
         request_rate = config.avg_system_load * config.load_thread_count / config.AVERAGE_SERVICE_TIME
         next_task_time = int(1/request_rate) if config.regular_arrivals else int(random.expovariate(request_rate))
         if config.bimodal_service_time:
-            distribution = [config.SHORT_REQUEST_SERVICE_TIME] + [config.LONG_REQUEST_SERVICE_TIME]
+            distribution = [config.SHORT_REQUEST_SERVICE_TIME] * 199 + [config.LONG_REQUEST_SERVICE_TIME]
         i = 0
         while (config.sim_duration is None or next_task_time < config.sim_duration) and \
                 (config.num_tasks is None or i < config.num_tasks):

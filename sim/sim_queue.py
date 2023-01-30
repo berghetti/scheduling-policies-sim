@@ -24,6 +24,10 @@ class Queue:
         self.config = config
         self.state = state
         self.is_orphan = False
+        self.is_fat_queue = False
+
+    def set_fat_queue(self):
+        self.is_fat_queue = True
 
     def set_thread(self, thread_id):
         """Add a thread to the set of threads corresponding to this queue."""

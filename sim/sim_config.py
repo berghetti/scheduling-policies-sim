@@ -16,7 +16,7 @@ class SimConfig:
                  enqueue_by_st_sum=False, always_check_realloc=False, ideal_flag_steal=False, delay_range_by_service_time=False,
                  ideal_reallocation=False, fred_reallocation=False, spin_parking_enabled=False, utilization_range_enabled=False,
                  allow_naive_idle=False, work_steal_park_enabled=False, bimodal_service_time=False, join_bounded_shortest_queue=False,
-                 record_queue_lens=False, new_policy_enable=False, persephone_enable=False, persephone_total_reserved_cores=None):
+                 record_queue_lens=False, new_policy_enable=False, persephone_enable=False, persephone_total_reserved_cores=None, new_policy2_enable=False):
         # Basic configuration
         self.name = name
         self.description = ""
@@ -67,6 +67,8 @@ class SimConfig:
         #new_policy configs
         self.new_policy_enable = new_policy_enable
         self.OVERHEAD_SEARCH_ORPHAN_QUEUE = 5000
+
+        self.new_policy2_enable = new_policy2_enable
 
         # persephone
         self.persephone_enable = persephone_enable

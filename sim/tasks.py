@@ -82,7 +82,7 @@ class Task:
     def time_in_system(self):
         """Returns time that the task has been in the system (arrival to completion)."""
         if (self.completion_time - self.arrival_time + 1) < 0:
-            print('Error: {}'.format(self.completion_time, self.arrival_time))
+            print('Error: {} {}'.format(self.completion_time, self.arrival_time))
         return self.completion_time - self.arrival_time + 1
 
     def requeue_wait_time(self):
@@ -237,7 +237,7 @@ class ReallocationTask(Task):
 class new_policy_watchdog_core_task(Task):
 
     def __init__(self, thread, config, state):
-        super().__init__(config.OVERHEAD_SEARCH_ORPHAN_QUEUE, state.timer.get_time(), config, state)
+        super().__init__(1, state.timer.get_time(), config, state)
         self.thread = thread
 
         #logging.info('Watchdog')
@@ -246,21 +246,34 @@ class new_policy_watchdog_core_task(Task):
         "only spent time. This is overhead of search orphan queue"
         super().process(time_increment=time_increment)
 
-    def on_complete(self):
-        "After overhead time is spent, try locate a orphan queue"
-        #pass
-        #search by orphan queues
+    def process_logic(self):
+        if self.thread.queue != -1:
+            return
+
         for queue in self.state.queues:
            #print(queue)
            if queue.is_orphan:
                logging.info('Watchdog thread {} adopt queue {}'.format(self.thread.id, queue))
                self.thread.queue = queue
                self.thread.queue.is_orphan = False
+               # overhead adopt queue
+               self.time_left = self.config.OVERHEAD_SEARCH_ORPHAN_QUEUE
                break
+
+    def on_complete(self):
+        """ Start processing request after overhead end, not call super function """
+        pass
 
     def descriptor(self):
         return "Search orphan queue task (arrival {}, duration {})".format(
             self.arrival_time, self.service_time)
+
+#class new_policy2_core_fat(Task):
+#    def __init__(self, thread, config, state):
+#        super().__init__(1, state.timer.get_time(), config, state)
+#        self.thread = thread
+
+
 
 class WorkSearchSpin(Task): # TODO: Check the preemption for double-counting
     """Task to spin a thread (not idle, but preemptable) if there is nothing else to do."""
@@ -289,7 +302,8 @@ class WorkSearchSpin(Task): # TODO: Check the preemption for double-counting
 
         # If checking local queue and work arrives, preempt
         elif self.thread.work_search_state == WorkSearchState.LOCAL_QUEUE_FIRST_CHECK and \
-                self.thread.queue != -1 and self.thread.queue.work_available():
+                self.thread.queue != -1 and self.thread.queue.work_available() or \
+                (self.thread.fat_queue != None and self.thread.fat_queue.work_available()):
             self.preempted = True
             self.complete = True
 
@@ -458,25 +472,26 @@ class OracleWorkStealTask(AbstractWorkStealTask):
 
 class persephone_dispatcher_task(Task):
     def __init__(self, thread, config, state ):
-        super().__init__(config.PERSEPHONE_OVERHEAD, state.timer.get_time(), config, state)
+        super().__init__(1, state.timer.get_time(), config, state)
         self.thread = thread
 
     def process(self, time_increment=1):
-        "Only wait overhead time pass"
+        """Only spent overhead time if new request is wait
+           this simulate classifier overhead"""
         super().process(time_increment=time_increment)
 
     def on_complete(self):
-        "Dispatch requests to worker cores, similiar algorithm 1 on paper"
+        """Dispatch requests to worker cores, similiar algorithm 1 on paper"""
 
-        for queue in self.thread.persephone_queues:
+        # queue[0] is short request, than always checked first
+        for i, queue in enumerate(self.thread.persephone_queues):
             if not queue.work_available(): continue
 
             worker = None
-            request = queue.dequeue()
 
             # search reserved cores
-            if request.service_time == self.state.config.SHORT_REQUEST_SERVICE_TIME:
-                for worker_core in self.state.threads:
+            if i == 0:
+                 for worker_core in self.state.threads:
                     if worker_core.id == self.thread.id: continue
 
                     # check if worker reserverd and free
@@ -497,10 +512,11 @@ class persephone_dispatcher_task(Task):
                         break
 
             if worker != None:
-                worker.queue.enqueue(request, set_original=True)
-            # No worker free, return request to dispatcher queue
-            else:
-                queue.reenqueue_head(request)
+                request = queue.dequeue()
+                # classifier overhead
+                request.time_left += self.config.PERSEPHONE_OVERHEAD
+                worker.queue.enqueue(request, set_original=False)
+
 
 class QueueCheckTask(Task):
     """Task to check the local queue of a thread."""
@@ -513,9 +529,6 @@ class QueueCheckTask(Task):
         self.return_to_work_steal = return_to_ws_task is not None
         self.ws_task = return_to_ws_task
         self.start_work_search_spin = False
-
-        #new_policy change
-        #self.locked_out = False
 
         #if self.thread.queue != -1:
         self.locked_out = not self.thread.queue.try_get_lock(self.thread.id)
@@ -534,20 +547,16 @@ class QueueCheckTask(Task):
     def on_complete(self):
         """Grab new task from queue if available."""
 
-        #new_policy
-        #if self.config.new_policy_enable and self.thread.queue == -1:
-        #    logging.info('Start watchdog thread {}'.format(self.thread))
-        #    self.thread.current_task = watchdog_orphan_queue(self.thread, self.config, self.state)
-
         # Start work search spin if marked to do so
         if self.start_work_search_spin:
+            #print('here')
             self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
 
-        # If locked out, just advance to next state
+        ## If locked out, just advance to next state
         elif self.locked_out:
             self.thread.work_search_state.advance()
 
-        # If reallocation replay, no work available, and have searched the minimum time, fill the time
+        ## If reallocation replay, no work available, and have searched the minimum time, fill the time
         elif self.config.reallocation_replay and not self.thread.queue.work_available() \
                 and (self.state.timer.get_time() - self.thread.work_search_state.search_start_time) + 1 \
                 < self.config.MINIMUM_WORK_SEARCH_TIME:
@@ -556,9 +565,12 @@ class QueueCheckTask(Task):
             else:
                 self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
 
+        #print(self.thread.queue)
         # If work is available, take it
         elif self.thread.queue.work_available():
-            self.thread.current_task = self.thread.queue.dequeue()
+            #logging.info('Checking thread {}'.format(self.thread))
+
+            request = self.thread.queue.dequeue()
             self.thread.queue.unlock(self.thread.id)
             self.thread.work_search_state.reset()
 
@@ -567,20 +579,55 @@ class QueueCheckTask(Task):
                 self.thread.last_allocation = None
 
             if self.config.new_policy_enable and \
-               self.thread.current_task.service_time == self.config.LONG_REQUEST_SERVICE_TIME:
+               request.service_time == self.config.LONG_REQUEST_SERVICE_TIME:
                     logging.info('Thread {} received LONG_REQUEST '\
                           'leaving queue {} orphan'.\
                            format(self.thread.id, self.thread.queue.id))
                     self.thread.queue.is_orphan = True
                     self.thread.queue = -1
 
+            elif self.config.new_policy2_enable and \
+                 request.service_time == self.config.LONG_REQUEST_SERVICE_TIME:
+                    logging.info('thread {} sending request to fat queue'.format(self.thread.id))
+                    #print(self.thread.fat_queue)
+
+                    self.thread.fat_queue.enqueue(Task(10, 10, None, None))
+                    self.thread.current_task.complete = True
+                    #for queue in self.state.queues:
+                    #    if queue.is_fat_queue:
+                    #        queue.enqueue(self.thread.current_task)
+                    #        self.thread.current_task = IdleTask(0, self.config, self.state)
+                    #        break
+            else:
+                self.thread.current_task = request
+
+
+            if self.thread.queue != -1 and self.thread.queue.is_fat_queue:
+                logging.info('fat_core working')
+
+                if self.thread.current_task.service_time != self.config.LONG_REQUEST_SERVICE_TIME:
+                    logging.info('error fat core')
+
+        # Only process long request if my queue is empty
+        elif self.config.new_policy2_enable and \
+             self.thread.fat_queue.work_available():
+            print('here 1')
+            logging.info('Working in fat queue')
+            self.thread.current_task = self.thread.fat_queue.deque()
+
+            if self.thread.last_allocation is not None:
+                self.ttate.alloc_to_task_time += (self.state.timer.get_time() - self.thread.last_allocation)
+                self.thread.last_allocation = None
+
         # If no work and marked to return to a work steal task, do so
         elif self.return_to_work_steal:
+            print('here 2')
             self.thread.current_task = self.ws_task
 
         # Otherwise, advance state
         else:
             self.thread.work_search_state.advance()
+            print('here 3')
 
     def descriptor(self):
         return "Local Queue Task (arrival {}, thread {})".format(

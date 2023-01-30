@@ -61,12 +61,17 @@ class Thread:
         self.last_allocation = None
         self.non_work_conserving_time = 0
 
+        self.fat_queue = None
+
         self.persephone_dispatcher = False
         self.persephone_queues = []
         self.persephone_reserved = False
 
         self.config = config
         self.state = state
+
+    def set_fat_queue(self, queue):
+        self.fat_queue = queue
 
     def total_time(self):
         """Return total time spent on tasks, distracted, unpaired, and paired."""
@@ -265,7 +270,6 @@ class Thread:
         elif self.config.new_policy_enable and self.queue == -1:
             self.current_task = new_policy_watchdog_core_task(self, self.config, self.state)
             self.process_task()
-
 
         # If thread is allocating, start allocation task
         elif self.work_search_state == WorkSearchState.ALLOCATING:

@@ -35,7 +35,7 @@ class Simulation:
         """Run the simulation."""
 
         #new_policy check
-        #print(self.config.persephone_enable))
+        #print(self.config.new_policy2_enable)
         #if self.config.new_policy_enable:
         #    print('Overhead search orphan queue: {}'.format(self.config.OVERHEAD_SEARCH_ORPHAN_QUEUE))
 
@@ -67,7 +67,7 @@ class Simulation:
                 time_jump, reschedule_required = self.find_time_jump(next_arrival, next_alloc,
                                                                      immediate_reschedule=reschedule_required)
 
-            logging.debug("\n(jump: {}, rr: {})".format(time_jump, reschedule_required))
+                logging.debug("\n(jump: {}, rr: {})".format(time_jump, reschedule_required))
 
             # Put new task arrivals in queues
             while task_number < self.state.tasks_scheduled and \
@@ -92,8 +92,8 @@ class Simulation:
                     self.state.queues[source_core].enqueue(self.state.tasks[task_number], set_original=True)
 
                 elif self.config.persephone_enable:
-                    chosen_queue = self.persephone_get_queue_dispatcher(self.state.tasks[task_number])
-                    self.state.queues[chosen_queue].enqueue(self.state.tasks[task_number], set_original=True)
+                    queue = self.persephone_get_queue_dispatcher(self.state.tasks[task_number])
+                    queue.enqueue(self.state.tasks[task_number], set_original=True)
 
                 else:
                     chosen_queue = random.choice(self.state.available_queues)
@@ -103,7 +103,7 @@ class Simulation:
                         self.state.threads[self.state.queues[chosen_queue].get_core()].is_busy():
                     self.state.threads[self.state.queues[chosen_queue].get_core()].fred_preempt = True
 
-                logging.debug("[ARRIVAL]: {} onto queue {}".format(self.state.tasks[task_number], chosen_queue))
+                #logging.debug("[ARRIVAL]: {} onto queue {}".format(self.state.tasks[task_number], chosen_queue))
                 task_number += 1
 
             # Reallocations
@@ -162,7 +162,7 @@ class Simulation:
         self.state.add_final_stats()
 
     def persephone_get_queue_dispatcher(self, task):
-        """Retorn  appropriate queue from core dispatcher based on task
+        """Retorn  appropriate queue from core dispatcher based on task,
            queue[0] is short request and queue[1] is long request
            queue[0] is first checked on dispatcher to worker cores"""
 
@@ -170,9 +170,10 @@ class Simulation:
             if not core.persephone_dispatcher: continue
 
             if task.service_time == self.config.SHORT_REQUEST_SERVICE_TIME:
-                return core.persephone_queues[0].id
+                #print(core.persephone_queues[0])
+                return core.persephone_queues[0]
             else:
-                return core.persephone_queues[1].id
+                return core.persephone_queues[1]
 
         print('Persephone dispatcher not set')
         exit(1)
@@ -473,9 +474,12 @@ class Simulation:
         # Write task information
         task_file.write(','.join(Task.get_stat_headers(self.config)) + "\n")
         for task in self.state.tasks:
+            if task.completion_time == 0: continue
+
             task_file.write(','.join(task.get_stats()) + "\n")
         task_file.close()
 
+        #print(self.config.__dict__)
         # Save the configuration
         json.dump(self.config.__dict__, meta_file, indent=0)
         meta_file.close()

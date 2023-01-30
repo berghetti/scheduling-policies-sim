@@ -25,6 +25,19 @@ class SimProcess(multiprocessing.Process):
         simulation.save_stats()
         print("Exiting " + self.name)
 
+class sim_multiple:
+    def __init__(self, thread_id, name, configuration, sim_dir_path):
+        self.thread_id = thread_id
+        self.name = name
+        self.config = configuration
+        self.sim_path = sim_dir_path
+
+    def start(self):
+        print("Starting " + self.name)
+        simulation = Simulation(self.config, self.sim_path)
+        simulation.run()
+        simulation.save_stats()
+        print("Exiting " + self.name)
 
 if __name__ == "__main__":
     time = datetime.now().strftime("%y-%m-%d_%H:%M:%S")
@@ -71,7 +84,7 @@ if __name__ == "__main__":
                 cfg.set_ws_permutation()
                 cfg.name = name
                 cfg.description = description
-                cfg.progress_bar = (i == 0)
+                #cfg.progress_bar = (i == 0)
 
             else:
                 print("Missing or invalid argument")
@@ -80,6 +93,7 @@ if __name__ == "__main__":
             threads.append(SimProcess(i, name, cfg, path_to_sim))
 
     else:
+        print(loads)
         for i, load in enumerate(loads):
             name = MULTI_THREAD_SIM_NAME_FORMAT.format(os.uname().nodename, time, i)
 
@@ -98,10 +112,14 @@ if __name__ == "__main__":
                 exit(1)
 
             threads.append(SimProcess(i, name, cfg, path_to_sim))
+            #threads.append(sim_multiple(i, name, cfg, path_to_sim))
 
     threads.reverse()
     for thread in threads:
         thread.start()
+
+    #for thread in threads:
+    #    thread.join()
 
     if not(os.path.isdir(CONFIG_LOG_DIR.format(path_to_sim))):
         os.makedirs(CONFIG_LOG_DIR.format(path_to_sim))
