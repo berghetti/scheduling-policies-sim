@@ -63,6 +63,8 @@ class Thread:
 
         self.fat_queue = None
 
+        #self.is_watchdog_auxiliary = False
+
         self.persephone_dispatcher = False
         self.persephone_queues = []
         self.persephone_reserved = False

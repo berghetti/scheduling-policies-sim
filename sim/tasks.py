@@ -489,7 +489,7 @@ class new_policy_watchdog_core_task(Task):
     def __init__(self, thread, config, state):
         super().__init__(1, state.timer.get_time(), config, state)
         self.thread = thread
-
+        self.state.active_watchdog += 1
         #logging.info('Watchdog thread {}'.format(self.thread.id))
 
     def process(self, time_increment=1):
@@ -500,29 +500,38 @@ class new_policy_watchdog_core_task(Task):
 
     def on_complete(self):
         """ Start processing request after overhead end, not call super function """
-        if self.thread.queue != -1:
-            return
 
         cur_time = self.state.timer.get_time()
         adopt_queue = None
         for queue in self.state.queues:
-            if not queue.is_orphan: continue
+            if not queue.is_orphan or not queue.work_available():
+                continue
 
             if adopt_queue == None:
                  adopt_queue = queue
             else:
                 #print('{} > {}'.format(cur_time - queue.orhan_start_time, cur_time - adopt_queue.orhan_start_time))
                 if (cur_time - queue.orhan_start_time) >  (cur_time - adopt_queue.orhan_start_time):
+                #if queue.length() > adopt_queue.length():
                     adopt_queue = queue
 
         if adopt_queue != None:
+            self.state.active_watchdog = False
             logging.info('{} | Watchdog thread {} adopt queue {}'.format(self.state.timer.get_time(), self.thread.id, adopt_queue))
+            #logging.info('{} | Watchdog count {} '.format(self.state.timer.get_time(), self.state.active_watchdog))
             self.thread.queue = adopt_queue
+            self.thread.queue.is_adopted = True
             self.thread.queue.is_orphan = False
             orphan_time = cur_time - self.thread.queue.orhan_start_time
             self.thread.queue.orhan_start_time = 0
-
             self.state.orphan_times.append(orphan_time)
+
+            self.thread.current_task = self.thread.queue.dequeue()
+            logging.info('{} | Getting task {}'.format(self.state.timer.get_time(), self.thread.current_task))
+
+            if self.thread.current_task.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
+                logging.info('Queue {} with request long'.format(self.thread.queue.id))
+
 
     def descriptor(self):
         return "Search orphan queue task (arrival {}, duration {})".format(
@@ -532,7 +541,8 @@ class QueueCheckTask(Task):
     """Task to check the local queue of a thread."""
 
     def __init__(self, thread, config, state, return_to_ws_task=None):
-        super().__init__(config.LOCAL_QUEUE_CHECK_TIME, state.timer.get_time(), config, state)
+        #super().__init__(config.LOCAL_QUEUE_CHECK_TIME, state.timer.get_time(), config, state)
+        super().__init__(1, state.timer.get_time(), config, state)
         self.thread = thread
 
         self.is_productive = False
@@ -540,17 +550,19 @@ class QueueCheckTask(Task):
         self.ws_task = return_to_ws_task
         self.start_work_search_spin = False
 
-        #if self.thread.queue != -1:
+        if self.thread.queue == -1:
+            print('shoulding be watchdog')
+
         self.locked_out = not self.thread.queue.try_get_lock(self.thread.id)
         # If no work stealing and there's nothing to get, start spin
-        if (not config.work_stealing_enabled and config.LOCAL_QUEUE_CHECK_TIME == 0 and \
-                not (self.thread.queue.work_available() or self.locked_out) ):
-            if not config.allow_naive_idle:
-                self.start_work_search_spin = True
-            else:
-                self.service_time = 1
-                self.time_left = 1
-                self.is_idle = True
+        #if (not config.work_stealing_enabled and config.LOCAL_QUEUE_CHECK_TIME == 0 and \
+        #        not (self.thread.queue.work_available() or self.locked_out) ):
+        #    if not config.allow_naive_idle:
+        #        self.start_work_search_spin = True
+        #    else:
+        #        self.service_time = 1
+        #        self.time_left = 1
+        #        self.is_idle = True
 
         #print('Create task on thread {} with queue {}'.format(self.thread.id, self.thread.queue.id))
 
@@ -566,7 +578,7 @@ class QueueCheckTask(Task):
         elif self.locked_out:
             self.thread.work_search_state.advance()
 
-        ## If reallocation replay, no work available, and have searched the minimum time, fill the time
+        # If reallocation replay, no work available, and have searched the minimum time, fill the time
         elif self.config.reallocation_replay and not self.thread.queue.work_available() \
                 and (self.state.timer.get_time() - self.thread.work_search_state.search_start_time) + 1 \
                 < self.config.MINIMUM_WORK_SEARCH_TIME:
@@ -588,14 +600,31 @@ class QueueCheckTask(Task):
                 self.ttate.alloc_to_task_time += (self.state.timer.get_time() - self.thread.last_allocation)
                 self.thread.last_allocation = None
 
-            if self.config.new_policy_enable and \
-               self.thread.current_task.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
+            if self.config.new_policy_enable:
+
+                #if self.thread.queue.is_adopted:
+                #    logging.info('{} | Thread {} working in queue adopted {} task {}'\
+                #                .format(self.state.timer.get_time(),self.thread.id, self.thread.queue.id, self.thread.current_task))
+
+                if self.thread.current_task.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
                     logging.info('{} | Thread {} received LONG_REQUEST '\
                           'leaving queue {} orphan'.\
-                           format(self.state.timer.get_time(), self.thread.id, self.thread.queue.id))
+                           format(self.state.timer.get_time(), self.thread.id, self.thread.queue))
                     self.thread.queue.is_orphan = True
                     self.thread.queue.orhan_start_time = self.state.timer.get_time()
                     self.thread.queue = -1
+                    self.state.active_watchdog -= 1
+
+        #print(self.state.active_watchdog)
+        elif self.config.new_policy_enable and self.state.active_watchdog <= 0:
+            logging.info('{} | Watchdog auxiliary {} leaving queue {} orphan because not working available'.\
+                         format(self.state.timer.get_time(), self.thread.id, self.thread.queue))
+            self.thread.queue.is_orphan = True
+            self.thread.queue.orhan_start_time = self.state.timer.get_time()
+            self.thread.queue = -1
+
+            self.thread.current_task = new_policy_watchdog_core_task(self.thread, self.config, self.state)
+
 
         # If no work and marked to return to a work steal task, do so
         elif self.return_to_work_steal:
@@ -605,7 +634,7 @@ class QueueCheckTask(Task):
         # Otherwise, advance state
         else:
             self.thread.work_search_state.advance()
-            print('here 3')
+            #print('here 3')
 
     def descriptor(self):
         return "Local Queue Task (arrival {}, thread {})".format(

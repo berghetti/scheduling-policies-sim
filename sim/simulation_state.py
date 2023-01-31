@@ -53,6 +53,8 @@ class SimulationState:
 
         self.attempted_flag_steals = 0
 
+        self.active_watchdog = 0
+
         self.q_orphan_index = 0
         self.orphan_times = []
 
@@ -356,21 +358,12 @@ class SimulationState:
                     queue = self.queues[config.mapping[i]]
                     self.threads.append(Thread(queue, i, config, self))
                     queue.set_thread(i)
+                    #if i < (config.num_threads / 2):
+                    #    self.threads[i].is_watchdog_auxiliary = True
                 else:
                     #queue.set_thread(i)
                     self.threads.append(Thread(-1, i, config, self))
-
-        elif config.new_policy2_enable:
-            fat_queue = Queue(100, config, self)
-            for i in range(config.num_threads):
-                if i < (len(set(config.mapping))):
-                    queue = self.queues[config.mapping[i]]
-                    self.threads.append(Thread(queue, i, config, self))
-                    queue.set_thread(i)
-
-            for thread in self.threads:
-                fat_queue.set_thread(thread.id)
-                thread.set_fat_queue(fat_queue)
+                    self.active_watchdog = 1
 
         else:
             for i in range(config.num_threads):
