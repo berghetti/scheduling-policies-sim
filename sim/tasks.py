@@ -522,7 +522,7 @@ class new_policy_watchdog_core_task(Task):
             orphan_time = cur_time - self.thread.queue.orhan_start_time
             self.thread.queue.orhan_start_time = 0
 
-            self.state.orhan_times.append(orphan_time)
+            self.state.orphan_times.append(orphan_time)
 
     def descriptor(self):
         return "Search orphan queue task (arrival {}, duration {})".format(
