@@ -138,7 +138,7 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
     orphan_times = []
     for line in queues_file:
         orphan_times.append(int(line))
-    orphan_time_percentile = np.percentile(orphan_times, 99.9)
+    orphan_time_percentile = np.percentile(orphan_times, 99.9) if len(orphan_times) > 0 else 0
 
     ## 99.9% Tail Flag Stats
     tasks_stolen_999 = 0

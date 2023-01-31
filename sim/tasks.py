@@ -511,36 +511,18 @@ class new_policy_watchdog_core_task(Task):
             if adopt_queue == None:
                  adopt_queue = queue
             else:
-                #print('{} > {}'.format(cur_time - queue.orphan_time, cur_time - adopt_queue.orphan_time))
-                if (cur_time - queue.orphan_time) >  (cur_time - adopt_queue.orphan_time):
+                #print('{} > {}'.format(cur_time - queue.orhan_start_time, cur_time - adopt_queue.orhan_start_time))
+                if (cur_time - queue.orhan_start_time) >  (cur_time - adopt_queue.orhan_start_time):
                     adopt_queue = queue
 
         if adopt_queue != None:
             logging.info('{} | Watchdog thread {} adopt queue {}'.format(self.state.timer.get_time(), self.thread.id, adopt_queue))
             self.thread.queue = adopt_queue
             self.thread.queue.is_orphan = False
-            orphan_time = self.state.timer.get_time() - self.thread.queue.orphan_time
-            self.thread.queue.orphan_time = 0
+            orphan_time = cur_time - self.thread.queue.orhan_start_time
+            self.thread.queue.orhan_start_time = 0
 
-            self.state.orphan_times.append(orphan_time)
-        #i = 0
-        #while i < len(self.state.queues):
-        #    i += 1
-        #    idx = (self.state.q_orphan_index + 1 ) % len(self.state.queues)
-        #    self.state.q_orphan_index = idx
-        #    queue = self.state.queues[idx]
-        #    if queue.is_orphan:
-        #        logging.info('{} | Watchdog thread {} adopt queue {}'.format(self.state.timer.get_time(), self.thread.id, queue))
-        #        self.thread.queue = queue
-        #        self.thread.queue.is_orphan = False
-        #        orphan_time = self.state.timer.get_time() - self.thread.queue.orphan_time
-        #        self.thread.queue.orphan_time = 0
-
-        #        self.state.orphan_times.append(orphan_time)
-        #        #print(self.state.orphan_times)
-        #        # overhead adopt queue
-        #        #self.time_left = self.config.OVERHEAD_SEARCH_ORPHAN_QUEUE
-        #        break
+            self.state.orhan_times.append(orphan_time)
 
     def descriptor(self):
         return "Search orphan queue task (arrival {}, duration {})".format(
@@ -598,7 +580,7 @@ class QueueCheckTask(Task):
         elif self.thread.queue.work_available():
             #logging.info('Checking thread {}'.format(self.thread))
 
-            request = self.thread.queue.dequeue()
+            self.thread.current_task = self.thread.queue.dequeue()
             self.thread.queue.unlock(self.thread.id)
             self.thread.work_search_state.reset()
 
@@ -607,27 +589,13 @@ class QueueCheckTask(Task):
                 self.thread.last_allocation = None
 
             if self.config.new_policy_enable and \
-               request.service_time == self.config.LONG_REQUEST_SERVICE_TIME:
+               self.thread.current_task.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
                     logging.info('{} | Thread {} received LONG_REQUEST '\
                           'leaving queue {} orphan'.\
                            format(self.state.timer.get_time(), self.thread.id, self.thread.queue.id))
                     self.thread.queue.is_orphan = True
-                    self.thread.queue.orphan_time = self.state.timer.get_time()
+                    self.thread.queue.orhan_start_time = self.state.timer.get_time()
                     self.thread.queue = -1
-                    self.thread.current_task = request
-            else:
-                self.thread.current_task = request
-
-        # Only process long request if my queue is empty
-        elif self.config.new_policy2_enable and \
-             self.thread.fat_queue.work_available():
-            print('here 1')
-            logging.info('Working in fat queue')
-            self.thread.current_task = self.thread.fat_queue.deque()
-
-            if self.thread.last_allocation is not None:
-                self.ttate.alloc_to_task_time += (self.state.timer.get_time() - self.thread.last_allocation)
-                self.thread.last_allocation = None
 
         # If no work and marked to return to a work steal task, do so
         elif self.return_to_work_steal:
