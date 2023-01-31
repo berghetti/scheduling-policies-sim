@@ -42,7 +42,7 @@ class sim_multiple:
 if __name__ == "__main__":
     time = datetime.now().strftime("%y-%m-%d_%H:%M:%S")
 
-    loads = list(range(10, 110, 10))
+    loads = list(range(5, 105, 5))
     threads = []
     cores = None
     description = ""

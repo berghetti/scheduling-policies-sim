@@ -234,39 +234,6 @@ class ReallocationTask(Task):
         return "Reallocation Task (arrival {}, duration {})".format(
             self.arrival_time, self.service_time)
 
-class new_policy_watchdog_core_task(Task):
-
-    def __init__(self, thread, config, state):
-        super().__init__(1, state.timer.get_time(), config, state)
-        self.thread = thread
-
-        #logging.info('Watchdog')
-
-    def process(self, time_increment=1):
-        "only spent time. This is overhead of search orphan queue"
-        super().process(time_increment=time_increment)
-
-    def process_logic(self):
-        if self.thread.queue != -1:
-            return
-
-        for queue in self.state.queues:
-           #print(queue)
-           if queue.is_orphan:
-               logging.info('Watchdog thread {} adopt queue {}'.format(self.thread.id, queue))
-               self.thread.queue = queue
-               self.thread.queue.is_orphan = False
-               # overhead adopt queue
-               self.time_left = self.config.OVERHEAD_SEARCH_ORPHAN_QUEUE
-               break
-
-    def on_complete(self):
-        """ Start processing request after overhead end, not call super function """
-        pass
-
-    def descriptor(self):
-        return "Search orphan queue task (arrival {}, duration {})".format(
-            self.arrival_time, self.service_time)
 
 #class new_policy2_core_fat(Task):
 #    def __init__(self, thread, config, state):
@@ -517,6 +484,67 @@ class persephone_dispatcher_task(Task):
                 request.time_left += self.config.PERSEPHONE_OVERHEAD
                 worker.queue.enqueue(request, set_original=False)
 
+class new_policy_watchdog_core_task(Task):
+
+    def __init__(self, thread, config, state):
+        super().__init__(1, state.timer.get_time(), config, state)
+        self.thread = thread
+
+        #logging.info('Watchdog thread {}'.format(self.thread.id))
+
+    def process(self, time_increment=1):
+        "only spent time. This is overhead of search orphan queue"
+        super().process(time_increment=time_increment)
+
+    #def process_logic(self):
+
+    def on_complete(self):
+        """ Start processing request after overhead end, not call super function """
+        if self.thread.queue != -1:
+            return
+
+        cur_time = self.state.timer.get_time()
+        adopt_queue = None
+        for queue in self.state.queues:
+            if not queue.is_orphan: continue
+
+            if adopt_queue == None:
+                 adopt_queue = queue
+            else:
+                #print('{} > {}'.format(cur_time - queue.orphan_time, cur_time - adopt_queue.orphan_time))
+                if (cur_time - queue.orphan_time) >  (cur_time - adopt_queue.orphan_time):
+                    adopt_queue = queue
+
+        if adopt_queue != None:
+            logging.info('{} | Watchdog thread {} adopt queue {}'.format(self.state.timer.get_time(), self.thread.id, adopt_queue))
+            self.thread.queue = adopt_queue
+            self.thread.queue.is_orphan = False
+            orphan_time = self.state.timer.get_time() - self.thread.queue.orphan_time
+            self.thread.queue.orphan_time = 0
+
+            self.state.orphan_times.append(orphan_time)
+        #i = 0
+        #while i < len(self.state.queues):
+        #    i += 1
+        #    idx = (self.state.q_orphan_index + 1 ) % len(self.state.queues)
+        #    self.state.q_orphan_index = idx
+        #    queue = self.state.queues[idx]
+        #    if queue.is_orphan:
+        #        logging.info('{} | Watchdog thread {} adopt queue {}'.format(self.state.timer.get_time(), self.thread.id, queue))
+        #        self.thread.queue = queue
+        #        self.thread.queue.is_orphan = False
+        #        orphan_time = self.state.timer.get_time() - self.thread.queue.orphan_time
+        #        self.thread.queue.orphan_time = 0
+
+        #        self.state.orphan_times.append(orphan_time)
+        #        #print(self.state.orphan_times)
+        #        # overhead adopt queue
+        #        #self.time_left = self.config.OVERHEAD_SEARCH_ORPHAN_QUEUE
+        #        break
+
+    def descriptor(self):
+        return "Search orphan queue task (arrival {}, duration {})".format(
+            self.arrival_time, self.service_time)
 
 class QueueCheckTask(Task):
     """Task to check the local queue of a thread."""
@@ -580,33 +608,15 @@ class QueueCheckTask(Task):
 
             if self.config.new_policy_enable and \
                request.service_time == self.config.LONG_REQUEST_SERVICE_TIME:
-                    logging.info('Thread {} received LONG_REQUEST '\
+                    logging.info('{} | Thread {} received LONG_REQUEST '\
                           'leaving queue {} orphan'.\
-                           format(self.thread.id, self.thread.queue.id))
+                           format(self.state.timer.get_time(), self.thread.id, self.thread.queue.id))
                     self.thread.queue.is_orphan = True
+                    self.thread.queue.orphan_time = self.state.timer.get_time()
                     self.thread.queue = -1
-
-            elif self.config.new_policy2_enable and \
-                 request.service_time == self.config.LONG_REQUEST_SERVICE_TIME:
-                    logging.info('thread {} sending request to fat queue'.format(self.thread.id))
-                    #print(self.thread.fat_queue)
-
-                    self.thread.fat_queue.enqueue(Task(10, 10, None, None))
-                    self.thread.current_task.complete = True
-                    #for queue in self.state.queues:
-                    #    if queue.is_fat_queue:
-                    #        queue.enqueue(self.thread.current_task)
-                    #        self.thread.current_task = IdleTask(0, self.config, self.state)
-                    #        break
+                    self.thread.current_task = request
             else:
                 self.thread.current_task = request
-
-
-            if self.thread.queue != -1 and self.thread.queue.is_fat_queue:
-                logging.info('fat_core working')
-
-                if self.thread.current_task.service_time != self.config.LONG_REQUEST_SERVICE_TIME:
-                    logging.info('error fat core')
 
         # Only process long request if my queue is empty
         elif self.config.new_policy2_enable and \

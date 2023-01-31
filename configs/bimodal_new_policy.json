@@ -1,7 +1,7 @@
 {
- "avg_system_load": 0.1,
- "num_queues": 16,
- "num_threads": 32,
+ "avg_system_load": 0.8,
+ "num_queues": 12,
+ "num_threads": 14,
  "mapping": [
  0,
  1,
@@ -14,13 +14,9 @@
  8,
  9,
  10,
- 11,
- 12,
- 13,
- 14,
- 15
+ 11
 ],
- "load_thread_count": 32,
+ "load_thread_count": 14,
  "num_tasks": null,
  "sim_duration": 100000000,
  "locking_enabled": false,
@@ -63,7 +59,7 @@
  "SHORT_REQUEST_SERVICE_TIME": 500,
  "LONG_REQUEST_SERVICE_TIME": 500000,
 
- "AVERAGE_SERVICE_TIME": 40000,
+ "AVERAGE_SERVICE_TIME": 4000,
  "WORK_STEAL_CHECK_TIME": 100,
  "WORK_STEAL_TIME": 100,
  "MINIMUM_WORK_SEARCH_TIME": 3100,

@@ -53,6 +53,9 @@ class SimulationState:
 
         self.attempted_flag_steals = 0
 
+        self.q_orphan_index = 0
+        self.orphan_times = []
+
         self.config = config
 
     def any_queue_past_delay_threshold(self):
@@ -376,7 +379,6 @@ class SimulationState:
                 queue.set_thread(i)
 
 
-
         # static persephone reserved cores and dispatcher core
         if config.persephone_enable:
             self.threads[0].persephone_dispatcher = True
@@ -389,13 +391,13 @@ class SimulationState:
                 self.threads[i].persephone_reserved = True
 
         # Set siblings
-        #for i in range(config.num_threads):
-        #    if config.num_threads % 2 == 1 and config.num_threads-1 == i:
-        #        self.threads[i].sibling = None
-        #    elif i % 2 == 0:
-        #        self.threads[i].sibling = self.threads[i + 1]
-        #    else:
-        #        self.threads[i].sibling = self.threads[i - 1]
+        for i in range(config.num_threads):
+            if config.num_threads % 2 == 1 and config.num_threads-1 == i:
+                self.threads[i].sibling = None
+            elif i % 2 == 0:
+                self.threads[i].sibling = self.threads[i + 1]
+            else:
+                self.threads[i].sibling = self.threads[i - 1]
 
         # Set tasks and arrival times
         request_rate = config.avg_system_load * config.load_thread_count / config.AVERAGE_SERVICE_TIME

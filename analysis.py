@@ -10,9 +10,10 @@ CPU_FILE_NAME = "cpu_usage.csv"
 TASK_FILE_NAME = "task_times.csv"
 META_FILE_NAME = "meta.json"
 STATS_FILE_NAME = "stats.json"
+QUEUES_FILE_NAME = "queues.json"
 CSV_HEADER = "Run ID,Cores,Sim Duration,Average Task Duration,Load,CPU Load,Task Load,Work Steal Load," \
              "95% Tail Latency,99.9% Tail Latency,Median Latency,99% Tail Latency,Slowdown 99%,Slowdown99.9%,latency_short 99.9%,latency_long 99.9%," \
-             "Tasks Stolen,Average Number of Steals,Throughput," \
+             "Tasks Stolen,Average Number of Steals,Throughput, orphan_count, orphan time 99.9%" \
              "Real Load, Parks Per Second,Successful Work Steal Time,Unsuccessful Work Steal Time,Non Work Conserving Time,Allocation Time," \
              "Task Time,Distracted Time,Unpaired Time,Paired Time,Average Requeue Wait Time,Flag Task Time,Avg Time From Alloc to Task," \
              "Avg Steals Per Task,Flag Response Rate,Flag Rate,Tasks Flag Stolen,Average Steals Per Flag,Avg Core Flag Wait Time," \
@@ -26,6 +27,7 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
     task_file = open(RESULTS_SUBDIR_NAME.format(run_name) + TASK_FILE_NAME, "r")
     meta_file = open(RESULTS_SUBDIR_NAME.format(run_name) + META_FILE_NAME, "r")
     stats_file = open(RESULTS_SUBDIR_NAME.format(run_name) + STATS_FILE_NAME, "r")
+    queues_file = open(RESULTS_SUBDIR_NAME.format(run_name) + QUEUES_FILE_NAME, "r")
 
     meta_data = json.load(meta_file)
     stats = json.load(stats_file)
@@ -133,6 +135,10 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
 
     slowdown_percentiles = np.percentile(task_slowdown, [99, 99.9])
 
+    orphan_times = []
+    for line in queues_file:
+        orphan_times.append(int(line))
+    orphan_time_percentile = np.percentile(orphan_times, 99.9)
 
     ## 99.9% Tail Flag Stats
     tasks_stolen_999 = 0
@@ -187,11 +193,11 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
 
     data_string = "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}," \
                   "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}," \
-                  "{},{},{},{},{},{},{}".format(
+                  "{},{},{},{},{},{},{},{},{}".format(
         run_name[4:], meta_data["num_threads"], meta_data["sim_duration"], meta_data["AVERAGE_SERVICE_TIME"],
         meta_data["avg_system_load"], avg_load * 100, avg_task_load * 100, avg_ws_load * 100, percentiles[0],
         percentiles[1], percentiles[2], percentiles[3], slowdown_percentiles[0], slowdown_percentiles[1], percentil_short_requests, percentil_long_requests,
-        percent_stolen * 100, avg_steals, throughput, real_load * 100,
+        percent_stolen * 100, avg_steals, throughput, len(orphan_times), orphan_time_percentile, real_load * 100,
         (stats["Global Park Count"]/stats["End Time"]) * 10**9, successful_ws_time, unsuccessful_ws_time, non_work_conserving_time,
         allocation_time, task_time, distracted_time, unpaired_time, paired_time, avg_requeue_wait_time, flag_task_time, avg_time_from_alloc_to_task,
         avg_flag_steals_per_task, flag_steal_rate, flag_rate, percent_flag_stolen * 100, average_steals_per_flag,

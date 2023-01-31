@@ -24,6 +24,7 @@ class Queue:
         self.config = config
         self.state = state
         self.is_orphan = False
+        self.orphan_time = 0     # time than queue is orphan
         self.is_fat_queue = False
 
     def set_fat_queue(self):

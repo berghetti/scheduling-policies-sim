@@ -465,6 +465,8 @@ class Simulation:
         meta_file = open("{}meta.json".format(new_dir_name), "w")
         stats_file = open("{}stats.json".format(new_dir_name), "w")
 
+        queues_file = open("{}queues.json".format(new_dir_name), "w")
+
         # Write CPU information
         cpu_file.write(','.join(Thread.get_stat_headers(self.config)) + "\n")
         for thread in self.state.threads:
@@ -478,6 +480,10 @@ class Simulation:
 
             task_file.write(','.join(task.get_stats()) + "\n")
         task_file.close()
+
+        for orphan_time in self.state.orphan_times:
+            queues_file.write('{}\n'.format(orphan_time))
+        queues_file.close()
 
         #print(self.config.__dict__)
         # Save the configuration
