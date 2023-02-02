@@ -53,7 +53,7 @@ class SimulationState:
 
         self.attempted_flag_steals = 0
 
-        self.active_watchdog = 0
+        self.active_watchdog = False
 
         self.q_orphan_index = 0
         self.orphan_times = []
@@ -363,7 +363,7 @@ class SimulationState:
                 else:
                     #queue.set_thread(i)
                     self.threads.append(Thread(-1, i, config, self))
-                    self.active_watchdog = 1
+                    self.active_watchdog = True
 
         else:
             for i in range(config.num_threads):

@@ -37,11 +37,19 @@ class Task:
         self.to_enqueue = None
         self.front_task_time = 0
 
+        #new_policy
+        self.should_preempt = False
+        self.quantum_preempt = 0
+
         self.config = config
         self.state = state
 
     def expected_completion_time(self):
         """Return predicted completion time based on time left."""
+        if self.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
+            return min(self.state.timer.get_time() + self.quantum_preempt,
+                       self.state.timer.get_time() + self.time_left)
+
         return self.state.timer.get_time() + self.time_left
 
     def process(self, time_increment=1, stop_condition=None):
@@ -65,10 +73,24 @@ class Task:
 
     def process_logic(self):
         """Any processing that must be done with the decremented timer but before the time left is checked."""
-        pass
-        #    print('Thread {} deixou orfa a queue'.format(self.thread.id, self.thread.queue))
-        #    self.thread.queue.is_orphan = True
-        #    self.thread.queue = -1
+        #pass
+        if self.time_left <= 0:
+            return
+
+
+        if self.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
+            if self.quantum_preempt == 0:
+                #logging.info('{} | quantum left {}'.format(self.state.timer.get_time(), self.quantum_preempt))
+                self.quantum_preempt = 5000
+
+                has_work = [q.is_orphan and q.work_available() for q in self.state.queues]
+
+                if not self.state.active_watchdog and has_work:
+                    logging.info('{} | preempting request {}'.format(self.state.timer.get_time(), self))
+                    self.state.queues[self.original_queue].enqueue(self, set_original=True)
+            else:
+                self.quantum_preempt -= 1
+
 
     def on_complete(self):
         """Complete the task and do any necessary accounting."""
@@ -269,8 +291,7 @@ class WorkSearchSpin(Task): # TODO: Check the preemption for double-counting
 
         # If checking local queue and work arrives, preempt
         elif self.thread.work_search_state == WorkSearchState.LOCAL_QUEUE_FIRST_CHECK and \
-                self.thread.queue != -1 and self.thread.queue.work_available() or \
-                (self.thread.fat_queue != None and self.thread.fat_queue.work_available()):
+            self.thread.queue != -1 and self.thread.queue.work_available():
             self.preempted = True
             self.complete = True
 
@@ -489,7 +510,7 @@ class new_policy_watchdog_core_task(Task):
     def __init__(self, thread, config, state):
         super().__init__(1, state.timer.get_time(), config, state)
         self.thread = thread
-        self.state.active_watchdog += 1
+        self.state.active_watchdog = True
         #logging.info('Watchdog thread {}'.format(self.thread.id))
 
     def process(self, time_increment=1):
@@ -521,17 +542,22 @@ class new_policy_watchdog_core_task(Task):
             #logging.info('{} | Watchdog count {} '.format(self.state.timer.get_time(), self.state.active_watchdog))
             self.thread.queue = adopt_queue
             self.thread.queue.is_adopted = True
-            self.thread.queue.is_orphan = False
             orphan_time = cur_time - self.thread.queue.orhan_start_time
             self.thread.queue.orhan_start_time = 0
             self.state.orphan_times.append(orphan_time)
 
             self.thread.current_task = self.thread.queue.dequeue()
-            logging.info('{} | Getting task {}'.format(self.state.timer.get_time(), self.thread.current_task))
+            logging.info('{} | thread {} getting task {}'.format(self.state.timer.get_time(), self.thread.id, self.thread.current_task))
 
             if self.thread.current_task.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
-                logging.info('Queue {} with request long'.format(self.thread.queue.id))
-
+                logging.info('{} | Thread {} received LONG_REQUEST {}'\
+                      'leaving queue {} orphan'.\
+                       format(self.state.timer.get_time(), self.thread.id, self.thread.current_task, self.thread.queue))
+                self.thread.queue.is_orphan = True
+                self.thread.queue.orhan_start_time = self.state.timer.get_time()
+                self.thread.queue.is_adopted = False
+                self.thread.queue = -1
+                self.thread.current_task.quantum_preempt = 5000
 
     def descriptor(self):
         return "Search orphan queue task (arrival {}, duration {})".format(
@@ -541,8 +567,8 @@ class QueueCheckTask(Task):
     """Task to check the local queue of a thread."""
 
     def __init__(self, thread, config, state, return_to_ws_task=None):
-        #super().__init__(config.LOCAL_QUEUE_CHECK_TIME, state.timer.get_time(), config, state)
-        super().__init__(1, state.timer.get_time(), config, state)
+        super().__init__(config.LOCAL_QUEUE_CHECK_TIME, state.timer.get_time(), config, state)
+        #super().__init__(1, state.timer.get_time(), config, state)
         self.thread = thread
 
         self.is_productive = False
@@ -552,17 +578,18 @@ class QueueCheckTask(Task):
 
         if self.thread.queue == -1:
             print('shoulding be watchdog')
+            exit(1)
 
         self.locked_out = not self.thread.queue.try_get_lock(self.thread.id)
         # If no work stealing and there's nothing to get, start spin
-        #if (not config.work_stealing_enabled and config.LOCAL_QUEUE_CHECK_TIME == 0 and \
-        #        not (self.thread.queue.work_available() or self.locked_out) ):
-        #    if not config.allow_naive_idle:
-        #        self.start_work_search_spin = True
-        #    else:
-        #        self.service_time = 1
-        #        self.time_left = 1
-        #        self.is_idle = True
+        if (not config.work_stealing_enabled and config.LOCAL_QUEUE_CHECK_TIME == 0 and \
+                not (self.thread.queue.work_available() or self.locked_out) ):
+            if not config.allow_naive_idle:
+                self.start_work_search_spin = True
+            else:
+                self.service_time = 1
+                self.time_left = 1
+                self.is_idle = True
 
         #print('Create task on thread {} with queue {}'.format(self.thread.id, self.thread.queue.id))
 
@@ -602,29 +629,15 @@ class QueueCheckTask(Task):
 
             if self.config.new_policy_enable:
 
-                #if self.thread.queue.is_adopted:
-                #    logging.info('{} | Thread {} working in queue adopted {} task {}'\
-                #                .format(self.state.timer.get_time(),self.thread.id, self.thread.queue.id, self.thread.current_task))
-
                 if self.thread.current_task.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
-                    logging.info('{} | Thread {} received LONG_REQUEST '\
+                    logging.info('{} | Thread {} received LONG_REQUEST {}'\
                           'leaving queue {} orphan'.\
-                           format(self.state.timer.get_time(), self.thread.id, self.thread.queue))
+                           format(self.state.timer.get_time(), self.thread.id, self.thread.current_task, self.thread.queue))
                     self.thread.queue.is_orphan = True
                     self.thread.queue.orhan_start_time = self.state.timer.get_time()
+                    self.thread.queue.is_adopted = False
                     self.thread.queue = -1
-                    self.state.active_watchdog -= 1
-
-        #print(self.state.active_watchdog)
-        elif self.config.new_policy_enable and self.state.active_watchdog <= 0:
-            logging.info('{} | Watchdog auxiliary {} leaving queue {} orphan because not working available'.\
-                         format(self.state.timer.get_time(), self.thread.id, self.thread.queue))
-            self.thread.queue.is_orphan = True
-            self.thread.queue.orhan_start_time = self.state.timer.get_time()
-            self.thread.queue = -1
-
-            self.thread.current_task = new_policy_watchdog_core_task(self.thread, self.config, self.state)
-
+                    self.thread.current_task.quantum_preempt = 5000
 
         # If no work and marked to return to a work steal task, do so
         elif self.return_to_work_steal:
