@@ -83,7 +83,7 @@ class Thread:
         """Return true if the thread has any task."""
         if search_spin_idle:
             return self.current_task is not None and type(self.current_task) != WorkSearchSpin
-        return self.current_task is not None and not self.current_task.preempted
+        return self.current_task is not None
 
     def is_productive(self):
         """Return true if the thread is working on a productive task."""

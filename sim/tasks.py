@@ -82,12 +82,23 @@ class Task:
             if self.quantum_preempt == 0:
                 #logging.info('{} | quantum left {}'.format(self.state.timer.get_time(), self.quantum_preempt))
                 self.quantum_preempt = 5000
+                if not self.state.active_watchdog:
+                    for queue in self.state.queues:
+                        if not queue.is_orphan or not queue.work_available():
+                            continue
 
-                has_work = [q.is_orphan and q.work_available() for q in self.state.queues]
+                        #logging.info('{} | Watchdog auxiliary thread {} adopt queue {}'.format(self.state.timer.get_time(), self.thread.id, adopt_queue))
+                        ##logging.info('{} | Watchdog count {} '.format(self.state.timer.get_time(), self.state.active_watchdog))
+                        #self.thread.queue = queue
+                        #self.thread.queue.is_adopted = True
+                        #orphan_time = cur_time - self.thread.queue.orhan_start_time
+                        #self.thread.queue.orhan_start_time = 0
+                        #self.state.orphan_times.append(orphan_time)
 
-                if not self.state.active_watchdog and has_work:
-                    logging.info('{} | preempting request {}'.format(self.state.timer.get_time(), self))
-                    self.state.queues[self.original_queue].enqueue(self, set_original=True)
+                        #self.thread.current_task = self.thread.queue.dequeue()
+                        logging.info('{} | sending task to orphan queue {}'.format(self.state.timer.get_time(), queue.id))
+                        self.state.queues[queue.id].enqueue(self, set_original=True)
+
             else:
                 self.quantum_preempt -= 1
 
