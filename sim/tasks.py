@@ -6,6 +6,7 @@ import random
 import logging
 from work_search_state import WorkSearchState
 
+QUANTUM = 500
 
 class Task:
     """Task to be completed by a thread."""
@@ -38,7 +39,6 @@ class Task:
         self.front_task_time = 0
 
         #new_policy
-        self.should_preempt = False
         self.quantum_preempt = 0
 
         self.config = config
@@ -79,28 +79,28 @@ class Task:
 
 
         if self.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
-            if self.quantum_preempt == 0:
                 #logging.info('{} | quantum left {}'.format(self.state.timer.get_time(), self.quantum_preempt))
-                self.quantum_preempt = 5000
-                if not self.state.active_watchdog:
-                    for queue in self.state.queues:
-                        if not queue.is_orphan or not queue.work_available():
-                            continue
+                #elf.quantum_preempt = 1000
+            if self.state.active_watchdog:
+                return
 
-                        #logging.info('{} | Watchdog auxiliary thread {} adopt queue {}'.format(self.state.timer.get_time(), self.thread.id, adopt_queue))
-                        ##logging.info('{} | Watchdog count {} '.format(self.state.timer.get_time(), self.state.active_watchdog))
-                        #self.thread.queue = queue
-                        #self.thread.queue.is_adopted = True
-                        #orphan_time = cur_time - self.thread.queue.orhan_start_time
-                        #self.thread.queue.orhan_start_time = 0
-                        #self.state.orphan_times.append(orphan_time)
+            self.quantum_preempt -= 1
 
-                        #self.thread.current_task = self.thread.queue.dequeue()
-                        logging.info('{} | sending task to orphan queue {}'.format(self.state.timer.get_time(), queue.id))
-                        self.state.queues[queue.id].enqueue(self, set_original=True)
+            if self.quantum_preempt > 0:
+                return
 
-            else:
-                self.quantum_preempt -= 1
+            self.quantum_preempt = QUANTUM
+
+
+            for queue in self.state.queues:
+                if not queue.is_orphan or not queue.work_available():
+                    continue
+
+                #self.thread.current_task = self.thread.queue.dequeue()
+                logging.info('{} | Preempting task {} send to orphan queue {}'.format(self.state.timer.get_time(), self, queue))
+                self.preempted = True
+                self.state.queues[queue.id].enqueue(self, set_original=True)
+                break
 
 
     def on_complete(self):
@@ -550,9 +550,8 @@ class new_policy_watchdog_core_task(Task):
         if adopt_queue != None:
             self.state.active_watchdog = False
             logging.info('{} | Watchdog thread {} adopt queue {}'.format(self.state.timer.get_time(), self.thread.id, adopt_queue))
-            #logging.info('{} | Watchdog count {} '.format(self.state.timer.get_time(), self.state.active_watchdog))
             self.thread.queue = adopt_queue
-            self.thread.queue.is_adopted = True
+            self.thread.queue.is_orphan = False
             orphan_time = cur_time - self.thread.queue.orhan_start_time
             self.thread.queue.orhan_start_time = 0
             self.state.orphan_times.append(orphan_time)
@@ -566,9 +565,9 @@ class new_policy_watchdog_core_task(Task):
                        format(self.state.timer.get_time(), self.thread.id, self.thread.current_task, self.thread.queue))
                 self.thread.queue.is_orphan = True
                 self.thread.queue.orhan_start_time = self.state.timer.get_time()
-                self.thread.queue.is_adopted = False
                 self.thread.queue = -1
-                self.thread.current_task.quantum_preempt = 5000
+                self.thread.current_task.quantum_preempt = QUANTUM
+                self.thread.current_task.preempted = False
 
     def descriptor(self):
         return "Search orphan queue task (arrival {}, duration {})".format(
@@ -646,9 +645,9 @@ class QueueCheckTask(Task):
                            format(self.state.timer.get_time(), self.thread.id, self.thread.current_task, self.thread.queue))
                     self.thread.queue.is_orphan = True
                     self.thread.queue.orhan_start_time = self.state.timer.get_time()
-                    self.thread.queue.is_adopted = False
                     self.thread.queue = -1
-                    self.thread.current_task.quantum_preempt = 5000
+                    self.thread.current_task.quantum_preempt = QUANTUM
+                    self.thread.current_task.preempted = False
 
         # If no work and marked to return to a work steal task, do so
         elif self.return_to_work_steal:
