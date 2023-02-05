@@ -84,6 +84,7 @@ class Thread:
         if search_spin_idle:
             return self.current_task is not None and type(self.current_task) != WorkSearchSpin
         return self.current_task is not None and not self.current_task.preempted
+        #return self.current_task is not None
 
     def is_productive(self):
         """Return true if the thread is working on a productive task."""
@@ -286,7 +287,7 @@ class Thread:
                 if self.work_steal_flag is not None:
                     self.current_task = FlagStealTask(self, self.config, self.state)
 
-            if self.current_task is None:
+            if self.current_task is None or self.current_task.preempted:
                 self.current_task = QueueCheckTask(self, self.config, self.state)
                 self.work_search_state.set_start_time()
 
