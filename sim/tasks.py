@@ -77,6 +77,8 @@ class Task:
         if self.time_left <= 0:
             return
 
+        if not self.config.new_policy_enable:
+            return
 
         if self.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
                 #elf.quantum_preempt = 1000
@@ -492,7 +494,7 @@ class persephone_dispatcher_task(Task):
         super().process(time_increment=time_increment)
 
     def on_complete(self):
-        """Dispatch requests to worker cores, similiar algorithm 1 on paper"""
+        """Dispatch requests to worker cores, similar algorithm 1 on paper"""
 
         # queue[0] is short request, than always checked first
         for i, queue in enumerate(self.thread.persephone_queues):
