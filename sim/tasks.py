@@ -46,7 +46,8 @@ class Task:
 
     def expected_completion_time(self):
         """Return predicted completion time based on time left."""
-        if self.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
+        if self.config.new_policy_enable and \
+                self.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
             return min(self.state.timer.get_time() + self.quantum_preempt,
                        self.state.timer.get_time() + self.time_left)
 
