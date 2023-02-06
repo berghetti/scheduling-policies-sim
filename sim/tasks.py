@@ -48,7 +48,7 @@ class Task:
         """Return predicted completion time based on time left."""
         if self.config.new_policy_enable and \
                 self.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
-            return min(self.quantum_preempt + QUANTUM - self.state.timer.get_time() * 2, # time left to preemption
+            return min(self.state.timer.get_time() * 2 - self.quantum_preempt + QUANTUM, # time left to preemption
                        self.state.timer.get_time() + self.time_left)
 
         return self.state.timer.get_time() + self.time_left
