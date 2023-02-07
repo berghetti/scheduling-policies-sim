@@ -54,6 +54,7 @@ class SimulationState:
         self.attempted_flag_steals = 0
 
         self.active_watchdog = False
+        self.virtual_queue = None
 
         self.q_orphan_index = 0
         self.orphan_times = []
@@ -348,6 +349,7 @@ class SimulationState:
         if config.join_bounded_shortest_queue:
             self.main_queue = Queue(-1, config, self)
 
+        self.virtual_queue = Queue(-1, config, self)
         # Initialize threads
 
         # new_policy
@@ -358,12 +360,13 @@ class SimulationState:
                     queue = self.queues[config.mapping[i]]
                     self.threads.append(Thread(queue, i, config, self))
                     queue.set_thread(i)
-                    #if i < (config.num_threads / 2):
-                    #    self.threads[i].is_watchdog_auxiliary = True
                 else:
                     #queue.set_thread(i)
-                    self.threads.append(Thread(-1, i, config, self))
-                    self.active_watchdog = True
+                    #self.threads.append(Thread(-1, i, config, self))
+                    vq = self.virtual_queue
+                    self.threads.append(Thread(vq, i, config, self))
+                    vq.set_thread(i)
+                    #self.active_watchdog = True
 
         else:
             for i in range(config.num_threads):

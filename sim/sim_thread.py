@@ -270,9 +270,9 @@ class Thread:
             self.process_task()
 
         # new_policy watchdog core
-        elif self.config.new_policy_enable and self.queue == -1:
-            self.current_task = new_policy_watchdog_core_task(self, self.config, self.state)
-            self.process_task()
+        #elif self.config.new_policy_enable and self.queue == -1:
+        #    self.current_task = new_policy_watchdog_core_task(self, self.config, self.state)
+        #    self.process_task()
 
         # If thread is allocating, start allocation task
         elif self.work_search_state == WorkSearchState.ALLOCATING:
