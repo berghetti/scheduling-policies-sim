@@ -43,6 +43,8 @@ if __name__ == "__main__":
     time = datetime.now().strftime("%y-%m-%d_%H:%M:%S")
 
     loads = list(range(5, 105, 5))
+    preempt_quantuns = list(range(5000, 50000, 5000))
+    preempt_overheads = list(range(1000, 6000, 1000))
     threads = []
     cores = None
     description = ""
@@ -94,7 +96,9 @@ if __name__ == "__main__":
 
     else:
         print(loads)
-        for i, load in enumerate(loads):
+        #for i, load in enumerate(loads):
+        #for i, quantum in enumerate(preempt_quantuns):
+        for i, overhead in enumerate(preempt_overheads):
             name = MULTI_THREAD_SIM_NAME_FORMAT.format(os.uname().nodename, time, i)
 
             if os.path.isfile(sys.argv[1]):
@@ -102,7 +106,9 @@ if __name__ == "__main__":
                 if cfg.reallocation_replay:
                     name_parts = cfg.reallocation_record.split("_", 1)
                     cfg.reallocation_record = MULTI_THREAD_SIM_NAME_FORMAT.format(name_parts[0], name_parts[1], i)
-                cfg.avg_system_load = load / 100
+                #cfg.avg_system_load = load / 100
+                #cfg.quantum_preemption = quantum
+                cfg.PREEMPTION_OVERHEAD = overhead
                 cfg.name = name
                 cfg.progress_bar = (i == 0)
                 cfg.description = description

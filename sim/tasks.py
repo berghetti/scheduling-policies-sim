@@ -6,8 +6,6 @@ import random
 import logging
 from work_search_state import WorkSearchState
 
-QUANTUM = 1000
-
 class Task:
     """Task to be completed by a thread."""
 
@@ -46,9 +44,10 @@ class Task:
 
     def expected_completion_time(self):
         """Return predicted completion time based on time left."""
+           #self.source_core != self.state.virtual_queue.get_core() and \
         if self.config.new_policy2_enable and \
-                self.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
-            return min(self.state.timer.get_time() + QUANTUM - (self.state.timer.get_time() - self.quantum_preempt), # time left to preemption
+            self.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
+            return min(self.state.timer.get_time() + self.config.quantum_preemption - (self.state.timer.get_time() - self.quantum_preempt), # time left to preemption
                        self.state.timer.get_time() + self.time_left)
 
         return self.state.timer.get_time() + self.time_left
@@ -85,18 +84,15 @@ class Task:
             return
 
         # time left before preepmtion
-        if (self.state.timer.get_time() - self.quantum_preempt) < QUANTUM:
+        if (self.state.timer.get_time() - self.quantum_preempt) < self.config.quantum_preemption:
             return
 
-        queue = self.state.queues[self.original_queue]
-        thread = self.state.threads[queue.get_core()]
-
-        # core long request not preempt
-        #print(queue.id, self.state.virtual_queue.id)
-        print(queue.id)
-        #if thread.id == self.state.virtual_queue.get_core():
+        # long core not preempt
+        #if self.source_core == self.state.virtual_queue.get_core():
+        #    self.preempted = False
         #    return
 
+        queue = self.state.queues[self.original_queue]
         if not queue.work_available():
             self.quantum_preempt = self.state.timer.get_time()
             return
@@ -268,13 +264,6 @@ class ReallocationTask(Task):
     def descriptor(self):
         return "Reallocation Task (arrival {}, duration {})".format(
             self.arrival_time, self.service_time)
-
-
-#class new_policy2_core_fat(Task):
-#    def __init__(self, thread, config, state):
-#        super().__init__(1, state.timer.get_time(), config, state)
-#        self.thread = thread
-
 
 
 class WorkSearchSpin(Task): # TODO: Check the preemption for double-counting
@@ -575,6 +564,21 @@ class new_policy_watchdog_core_task(Task):
         return "Search orphan queue task (arrival {}, duration {})".format(
             self.arrival_time, self.service_time)
 
+class Overhead_preepmtion_task(Task):
+    def __init__(self, thread, config, state):
+        super().__init__(config.PREEMPTION_OVERHEAD, state.timer.get_time(), config, state)
+        self.thread = thread
+
+        logging.info('{} | Thread {} starting preemption overhread'.format(self.state.timer.get_time(), self.thread))
+
+    def on_complete(self):
+        logging.info('{} | Thread {} termineted overhread time'.format(self.state.timer.get_time(), self.thread))
+        super().on_complete()
+
+    def descriptor(self):
+        return "Overhead preepmtion Task (arrival {}, thread {})".format(
+            self.arrival_time, self.thread.id)
+
 class QueueCheckTask(Task):
     """Task to check the local queue of a thread."""
 
@@ -602,8 +606,6 @@ class QueueCheckTask(Task):
                 self.service_time = 1
                 self.time_left = 1
                 self.is_idle = True
-
-        #print('Create task on thread {} with queue {}'.format(self.thread.id, self.thread.queue.id))
 
     def on_complete(self):
         """Grab new task from queue if available."""
@@ -650,6 +652,8 @@ class QueueCheckTask(Task):
                         logging.info('{} | Send to virtual queue {}'.format(self.state.timer.get_time(), self.state.virtual_queue))
                     else:
                         self.thread.current_task = request
+                        self.thread.current_task.preempted = False
+                        self.thread.current_task.source_core = self.thread.id
                         logging.info('{} | Thread {}'.format(self.state.timer.get_time(), self.thread))
                 else:
                     self.thread.current_task = request
@@ -666,12 +670,15 @@ class QueueCheckTask(Task):
             else:
                 self.thread.current_task = request
 
-        elif self.config.new_policy2_enable and self.state.virtual_queue.work_available():
-            self.thread.current_task = self.state.virtual_queue.dequeue()
-            self.thread.current_task.quantum_preempt = self.state.timer.get_time()
-            self.thread.current_task.preempted = False
-            self.thread.current_task.original_queue = self.thread.queue.id
-            logging.info('{} | Thread {} get request {} from virtual queue'.format(self.state.timer.get_time(), self.thread.id, self.thread.current_task))
+        elif self.config.new_policy2_enable:
+            if self.state.virtual_queue.work_available():
+                self.thread.current_task = self.state.virtual_queue.dequeue()
+                self.thread.current_task.quantum_preempt = self.state.timer.get_time()
+                self.thread.current_task.preempted = False
+                self.thread.current_task.original_queue = self.thread.queue.id
+                logging.info('{} | Thread {} get request {} from virtual queue'.format(self.state.timer.get_time(), self.thread.id, self.thread.current_task))
+            else:
+                self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
 
         # If no work and marked to return to a work steal task, do so
         elif self.return_to_work_steal:

@@ -56,11 +56,11 @@
  "record_queue_lens": false,
 
  "new_policy_enable": false,
- "new_policy2_enable": true,
- "PREEMPTION_OVERHEAD" : 1000,
- "quantum_preemption": 5000,
+ "OVERHEAD_SEARCH_ORPHAN_QUEUE": 5000,
 
- "OVERHEAD_SEARCH_ORPHAN_QUEUE": 300,
+ "persephone_enable": true,
+ "persephone_total_reserved_cores": 1,
+ "PERSEPHONE_OVERHEAD": 0,
 
  "SHORT_REQUEST_SERVICE_TIME": 1000,
  "LONG_REQUEST_SERVICE_TIME": 100000,

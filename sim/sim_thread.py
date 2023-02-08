@@ -4,7 +4,7 @@
 import random
 import logging
 from work_search_state import WorkSearchState
-from tasks import WorkSearchSpin, WorkStealTask, Task, EnqueuePenaltyTask, RequeueTask, ReallocationTask, FlagStealTask, QueueCheckTask, OracleWorkStealTask, IdleTask, persephone_dispatcher_task, new_policy_watchdog_core_task
+from tasks import WorkSearchSpin, WorkStealTask, Task, EnqueuePenaltyTask, RequeueTask, ReallocationTask, FlagStealTask, QueueCheckTask, OracleWorkStealTask, IdleTask, persephone_dispatcher_task, new_policy_watchdog_core_task, Overhead_preepmtion_task
 
 
 class Thread:
@@ -287,7 +287,11 @@ class Thread:
                 if self.work_steal_flag is not None:
                     self.current_task = FlagStealTask(self, self.config, self.state)
 
-            if self.current_task is None or self.current_task.preempted:
+            if self.current_task != None and self.current_task.preempted:
+                "spin thread until the overhead time"
+                self.current_task = Overhead_preepmtion_task(self, self.config, self.state)
+
+            if self.current_task is None:
                 self.current_task = QueueCheckTask(self, self.config, self.state)
                 self.work_search_state.set_start_time()
 

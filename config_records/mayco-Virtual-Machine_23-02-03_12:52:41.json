@@ -1,6 +1,6 @@
 {
- "avg_system_load": 0.5,
- "num_queues": 14,
+ "avg_system_load": 1,
+ "num_queues": 13,
  "num_threads": 14,
  "mapping": [
  0,
@@ -15,8 +15,7 @@
  9,
  10,
  11,
- 12,
- 13
+ 12
 ],
  "load_thread_count": 14,
  "num_tasks": null,
@@ -55,17 +54,13 @@
  "join_bounded_shortest_queue": false,
  "record_queue_lens": false,
 
- "new_policy_enable": false,
- "new_policy2_enable": true,
- "PREEMPTION_OVERHEAD" : 1000,
- "quantum_preemption": 5000,
-
+ "new_policy_enable": true,
  "OVERHEAD_SEARCH_ORPHAN_QUEUE": 300,
 
- "SHORT_REQUEST_SERVICE_TIME": 1000,
- "LONG_REQUEST_SERVICE_TIME": 100000,
+ "SHORT_REQUEST_SERVICE_TIME": 500,
+ "LONG_REQUEST_SERVICE_TIME": 500000,
 
- "AVERAGE_SERVICE_TIME": 1000,
+ "AVERAGE_SERVICE_TIME": 4000,
  "WORK_STEAL_CHECK_TIME": 100,
  "WORK_STEAL_TIME": 100,
  "MINIMUM_WORK_SEARCH_TIME": 3100,

@@ -35,7 +35,7 @@ class Simulation:
         """Run the simulation."""
 
         #new_policy check
-        #print(self.config.new_policy2_enable)
+        print(self.config.PREEMPTION_OVERHEAD, self.config.quantum_preemption)
         #if self.config.new_policy_enable:
         #    print('Overhead search orphan queue: {}'.format(self.config.OVERHEAD_SEARCH_ORPHAN_QUEUE))
 
