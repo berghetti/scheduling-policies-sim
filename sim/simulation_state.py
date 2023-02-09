@@ -396,7 +396,8 @@ class SimulationState:
                 self.threads[i].sibling = self.threads[i - 1]
 
         # Set tasks and arrival times
-        request_rate = config.avg_system_load * config.load_thread_count / config.AVERAGE_SERVICE_TIME
+        #request_rate = config.avg_system_load * config.load_thread_count / config.AVERAGE_SERVICE_TIME
+        request_rate = config.avg_system_load * config.rps / 10 ** 9
         next_task_time = int(1/request_rate) if config.regular_arrivals else int(random.expovariate(request_rate))
         if config.bimodal_service_time:
             distribution = [config.SHORT_REQUEST_SERVICE_TIME] * 199 + [config.LONG_REQUEST_SERVICE_TIME]

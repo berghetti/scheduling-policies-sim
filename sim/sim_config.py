@@ -17,7 +17,7 @@ class SimConfig:
                  ideal_reallocation=False, fred_reallocation=False, spin_parking_enabled=False, utilization_range_enabled=False,
                  allow_naive_idle=False, work_steal_park_enabled=False, bimodal_service_time=False, join_bounded_shortest_queue=False,
                  record_queue_lens=False, new_policy_enable=False, persephone_enable=False, persephone_total_reserved_cores=None, new_policy2_enable=False,
-                 quantum_preemption=0):
+                 quantum_preemption=0, rps=1000000):
         # Basic configuration
         self.name = name
         self.description = ""
@@ -77,6 +77,9 @@ class SimConfig:
         self.persephone_enable = persephone_enable
         self.persephone_total_reserved_cores = persephone_total_reserved_cores
         self.PERSEPHONE_OVERHEAD = 200
+
+        # requests per second
+        self.rps = rps
 
         # to bimodal distribuitions
         self.SHORT_REQUEST_SERVICE_TIME = 500 # 0.5us
