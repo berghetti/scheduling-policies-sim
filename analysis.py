@@ -51,6 +51,7 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
     paired_time = 0
     flag_task_time = 0
     flag_wait_time = 0
+    max_idle_interval = 0
 
     next(cpu_file) # skip first line
     for line in cpu_file:
@@ -68,9 +69,11 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
         distracted_time += int(data[11])
         unpaired_time += int(data[12])
         paired_time += int(data[13])
-        if len(data) > 14:
-            flag_task_time += int(data[14])
-            flag_wait_time += int(data[15])
+        if int(date[14]) > max_idle_interval:
+            max_idle_interval = int(data[14])
+        #if len(data) > 14:
+        #    flag_task_time += int(data[14])
+        #    flag_wait_time += int(data[15])
 
     cpu_file.close()
 
@@ -193,7 +196,7 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
 
     data_string = "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}," \
                   "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}," \
-                  "{},{},{},{},{},{},{},{},{}".format(
+                  "{},{},{},{},{},{},{},{},{},{},{}".format(
         run_name[4:], meta_data["num_threads"], meta_data["sim_duration"], meta_data["AVERAGE_SERVICE_TIME"],
         meta_data["avg_system_load"], avg_load * 100, avg_task_load * 100, avg_ws_load * 100, percentiles[0],
         percentiles[1], percentiles[2], percentiles[3], slowdown_percentiles[0], slowdown_percentiles[1], percentil_short_requests, percentil_long_requests,
@@ -203,7 +206,7 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
         avg_flag_steals_per_task, flag_steal_rate, flag_rate, percent_flag_stolen * 100, average_steals_per_flag,
         avg_core_flag_wait_time * 100, avg_task_flag_wait_time, avg_queueing_time, avg_core_flag_wait_time_99,
         avg_flag_set_delay_time, avg_flag_set_delay_time_99, avg_flagged_service_time, avg_flagged_time_left, pct_flagged_queues_empty * 100,
-        "\"{}\"".format(meta_data["description"]))
+        "\"{}\"".format(meta_data["description"]), max_idle_interval)
     output_file.write(data_string + "\n")
 
 
