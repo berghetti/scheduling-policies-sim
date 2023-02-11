@@ -35,7 +35,7 @@ class Simulation:
         """Run the simulation."""
 
         #new_policy check
-        print('P.V: {}\t P.Q: {}\t RPS: {}\tQ.VQ: {}'.format(
+        print('P.O: {}\t P.Q: {}\t RPS: {}\tQ.VQ: {}'.format(
             self.config.PREEMPTION_OVERHEAD,
             self.config.quantum_preemption,
             self.config.rps,

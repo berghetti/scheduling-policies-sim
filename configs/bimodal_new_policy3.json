@@ -1,5 +1,5 @@
 {
- "avg_system_load": 0.7,
+ "avg_system_load": 0.75,
  "rps": 10000000,
  "num_queues": 14,
  "num_threads": 14,
@@ -59,13 +59,13 @@
  "new_policy_enable": false,
 
  "new_policy2_enable": true,
- "policy2_quantum_to_check_vqueue": 6000,
+ "policy2_quantum_to_check_vqueue": 5000,
 
  "new_policy3_enable": false,
  "policy3_num_virtual_queues": 2,
 
  "preemption_enable": true,
- "quantum_preemption": 5000,
+ "quantum_preemption": 10000,
  "PREEMPTION_OVERHEAD" : 3000,
 
  "OVERHEAD_SEARCH_ORPHAN_QUEUE": 300,

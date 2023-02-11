@@ -3,6 +3,7 @@
 
 import random
 import logging
+import numpy as np
 from work_search_state import WorkSearchState
 from tasks import WorkSearchSpin, WorkStealTask, Task, EnqueuePenaltyTask, RequeueTask, ReallocationTask, FlagStealTask, QueueCheckTask, OracleWorkStealTask, IdleTask, persephone_dispatcher_task, new_policy_watchdog_core_task, Overhead_preepmtion_task
 
@@ -353,7 +354,8 @@ class Thread:
         stats = [self.id, self.time_busy, self.task_time, self.work_stealing_time, self.work_steal_wait_time,
                  self.enqueue_time, self.requeue_time,
                  self.successful_ws_time, self.unsuccessful_ws_time, self.allocation_time, self.non_work_conserving_time,
-                 self.distracted_time, self.unpaired_time, self.paired_time, sum(self.idles) / len(self.idles),
+                 self.distracted_time, self.unpaired_time, self.paired_time,
+                 np.percentile(self.idles, 99) if len(self.idles) > 0 else 0,
                  self.flag_task_time, self.flag_wait_time]
 
         #if self.config.delay_flagging_enabled:
@@ -366,7 +368,7 @@ class Thread:
         headers = ["Thread ID", "Busy Time", "Task Time", "Work Stealing Time", "Work Steal Spin Time",
                    "Enqueue Time", "Requeue Time", "Successful Work Steal Time", "Unsuccessful Work Steal Time",
                    "Allocation Time", "Non Work Conserving Time", "Distracted Time", "Unpaired Time", "Paired Time",
-                   "Avg Inverval Idle","Flag Task Time", "Flag Wait Time"]
+                   "99% Inverval Idle","Flag Task Time", "Flag Wait Time"]
        # if config.delay_flagging_enabled:
        #     headers += ["Flag Task Time", "Flag Wait Time"]
         return headers

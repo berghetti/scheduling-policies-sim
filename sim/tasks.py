@@ -45,8 +45,7 @@ class Task:
 
     def expected_completion_time(self):
         """Return predicted completion time based on time left."""
-           #self.source_core != self.state.virtual_queue.get_core() and \
-        if self.config.new_policy2_enable and \
+        if self.config.preemption_enable and \
             self.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
             return min(self.state.timer.get_time() + self.config.quantum_preemption - (self.state.timer.get_time() - self.quantum_preempt), # time left to preemption
                        self.state.timer.get_time() + self.time_left)
@@ -97,9 +96,9 @@ class Task:
             self.quantum_preempt = self.state.timer.get_time()
             return
 
-        logging.info('{} | Thread {} preempting task {} send to queue {}'.format(self.state.timer.get_time(), thread.id, self, self.state.virtual_queue))
         self.state.virtual_queue.enqueue(self, set_original=True)
         self.preempted = True
+        logging.info('{} | Thread {} preempt task {} send to queue {}'.format(self.state.timer.get_time(), thread.id, self, self.state.virtual_queue))
 
     def on_complete(self):
         """Complete the task and do any necessary accounting."""
@@ -635,9 +634,10 @@ class QueueCheckTask(Task):
         #        self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
 
         elif self.config.new_policy2_enable:
-            self.thread.last_time_checked_vqueue = self.state.timer.get_time()
             if not self.thread.queue.work_available():
+                self.thread.last_time_checked_vqueue = self.state.timer.get_time()
                 if self.state.virtual_queue.work_available():
+                    self.thread.last_time_checked_vqueue += self.config.PREEMPTION_OVERHEAD + self.config.quantum_preemption
                     self.thread.current_task = self.state.virtual_queue.dequeue()
                     self.thread.current_task.quantum_preempt = self.state.timer.get_time()
                     self.thread.current_task.preempted = False
@@ -651,6 +651,7 @@ class QueueCheckTask(Task):
             elif self.state.timer.get_time() - self.thread.last_time_checked_vqueue > self.config.policy2_quantum_to_check_vqueue:
                 self.thread.last_time_checked_vqueue = self.state.timer.get_time()
                 if self.state.virtual_queue.work_available():
+                    self.thread.last_time_checked_vqueue += self.config.PREEMPTION_OVERHEAD + self.config.quantum_preemption
                     self.thread.current_task = self.state.virtual_queue.dequeue()
                     self.thread.current_task.quantum_preempt = self.state.timer.get_time()
                     self.thread.current_task.preempted = False
