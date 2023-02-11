@@ -38,6 +38,7 @@ class Task:
 
         #new_policy
         self.quantum_preempt = 0
+        self.should_preempt = False
 
         self.config = config
         self.state = state
@@ -76,7 +77,10 @@ class Task:
         if self.time_left <= 0:
             return
 
-        if not self.config.new_policy2_enable:
+        if not self.config.preemption_enable:
+            return
+
+        if not self.should_preempt:
             return
 
         # short request
@@ -87,17 +91,13 @@ class Task:
         if (self.state.timer.get_time() - self.quantum_preempt) < self.config.quantum_preemption:
             return
 
-        # long core not preempt
-        #if self.source_core == self.state.virtual_queue.get_core():
-        #    self.preempted = False
-        #    return
-
         queue = self.state.queues[self.original_queue]
+        thread = self.state.threads[queue.get_core()]
         if not queue.work_available():
             self.quantum_preempt = self.state.timer.get_time()
             return
 
-        logging.info('{} | Preempting task {} send to queue {}'.format(self.state.timer.get_time(), self, self.state.virtual_queue))
+        logging.info('{} | Thread {} preempting task {} send to queue {}'.format(self.state.timer.get_time(), thread.id, self, self.state.virtual_queue))
         self.state.virtual_queue.enqueue(self, set_original=True)
         self.preempted = True
 
@@ -598,17 +598,21 @@ class QueueCheckTask(Task):
 
         self.locked_out = not self.thread.queue.try_get_lock(self.thread.id)
         # If no work stealing and there's nothing to get, start spin
-        if (not self.config.new_policy2_enable and not config.work_stealing_enabled and config.LOCAL_QUEUE_CHECK_TIME == 0 and \
-                not (self.thread.queue.work_available() or self.locked_out) ):
-            if not config.allow_naive_idle:
-                self.start_work_search_spin = True
-            else:
-                self.service_time = 1
-                self.time_left = 1
-                self.is_idle = True
+        #if (not self.config.new_policy2_enable and not config.work_stealing_enabled and config.LOCAL_QUEUE_CHECK_TIME == 0 and \
+        #        not (self.thread.queue.work_available() or self.locked_out) ):
+        #    if not config.allow_naive_idle:
+        #        self.start_work_search_spin = True
+        #    else:
+        #        self.service_time = 1
+        #        self.time_left = 1
+        #        self.is_idle = True
 
     def on_complete(self):
         """Grab new task from queue if available."""
+
+        if not self.thread.queue.work_available():
+            self.thread.idles.append(self.state.timer.get_time() - self.thread.last_time_idle)
+            self.thread.last_time_idle = self.state.timer.get_time()
 
         # Start work search spin if marked to do so
         if self.start_work_search_spin:
@@ -617,21 +621,48 @@ class QueueCheckTask(Task):
 
         ## If locked out, just advance to next state
         elif self.locked_out:
+            print('here')
             self.thread.work_search_state.advance()
 
         # If reallocation replay, no work available, and have searched the minimum time, fill the time
-        elif not self.config.new_policy2_enable and self.config.reallocation_replay and not \
-                self.thread.queue.work_available() \
-                and (self.state.timer.get_time() - self.thread.work_search_state.search_start_time) + 1 \
-                < self.config.MINIMUM_WORK_SEARCH_TIME:
-            if self.config.LOCAL_QUEUE_CHECK_TIME != 0:
-                self.thread.work_search_state.reset(clear_start_time=False)
-            else:
-                self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
+        #elif not self.config.new_policy2_enable and self.config.reallocation_replay and not \
+        #        self.thread.queue.work_available() \
+        #        and (self.state.timer.get_time() - self.thread.work_search_state.search_start_time) + 1 \
+        #        < self.config.MINIMUM_WORK_SEARCH_TIME:
+        #    if self.config.LOCAL_QUEUE_CHECK_TIME != 0:
+        #        self.thread.work_search_state.reset(clear_start_time=False)
+        #    else:
+        #        self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
+
+        elif self.config.new_policy2_enable:
+            if not self.thread.queue.work_available():
+                if self.state.virtual_queue.work_available():
+                    self.thread.current_task = self.state.virtual_queue.dequeue()
+                    self.thread.current_task.quantum_preempt = self.state.timer.get_time()
+                    self.thread.current_task.preempted = False
+                    self.thread.current_task.should_preempt = True
+                    self.thread.current_task.original_queue = self.thread.queue.id
+                    logging.info('{} | Thread {} get request {} from virtual queue because idle'.format(self.state.timer.get_time(), self.thread.id, self.thread.current_task))
+                    return
+                else:
+                    self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
+                    return
+            #elif self.state.timer.get_time() - self.thread.last_time_checked_vqueue > self.config.policy2_quantum_to_check_vqueue:
+            #    self.thread.last_time_checked_vqueue = self.state.timer.get_time()
+            #    if self.state.virtual_queue.work_available():
+            #        self.thread.current_task = self.state.virtual_queue.dequeue()
+            #        self.thread.current_task.quantum_preempt = self.state.timer.get_time()
+            #        self.thread.current_task.preempted = False
+            #        self.thread.current_task.should_preempt = True
+            #        self.thread.current_task.original_queue = self.thread.queue.id
+            #        logging.info('{} | Thread {} get request {} from virtual queue because time check'.format(self.state.timer.get_time(), self.thread.id, self.thread.current_task))
+            #    else:
+            #        self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
+
 
         #print(self.thread.queue)
         # If work is available, take it
-        elif self.thread.queue.work_available():
+        if self.thread.queue.work_available():
             #logging.info('Checking thread {}'.format(self.thread))
 
             request = self.thread.queue.dequeue()
@@ -661,24 +692,15 @@ class QueueCheckTask(Task):
             # send long request to virtual queue
             elif self.config.new_policy2_enable:
                 if request.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
-                    logging.info('{} | Thread {} received LONG_REQUEST {}'.format(self.state.timer.get_time(), self.thread.id, request))
-                    logging.info('{} | Send to virtual queue {}'.format(self.state.timer.get_time(), self.state.virtual_queue))
                     self.state.virtual_queue.enqueue(request)
+                    logging.info('{} | Thread {} received LONG_REQUEST {}'.format(self.state.timer.get_time(), self.thread.id, request))
+                    logging.info('{} | Sended to virtual queue {}'.format(self.state.timer.get_time(), self.state.virtual_queue))
                 else:
                     self.thread.current_task = request
 
             else:
                 self.thread.current_task = request
 
-        elif self.config.new_policy2_enable:
-            if self.state.virtual_queue.work_available():
-                self.thread.current_task = self.state.virtual_queue.dequeue()
-                self.thread.current_task.quantum_preempt = self.state.timer.get_time()
-                self.thread.current_task.preempted = False
-                self.thread.current_task.original_queue = self.thread.queue.id
-                logging.info('{} | Thread {} get request {} from virtual queue'.format(self.state.timer.get_time(), self.thread.id, self.thread.current_task))
-            else:
-                self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
 
         # If no work and marked to return to a work steal task, do so
         elif self.return_to_work_steal:

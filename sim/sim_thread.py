@@ -61,9 +61,10 @@ class Thread:
         self.last_allocation = None
         self.non_work_conserving_time = 0
 
-        self.fat_queue = None
+        self.last_time_checked_vqueue = 0
+        self.last_time_idle = 0
+        self.idles = []
 
-        #self.is_watchdog_auxiliary = False
 
         self.persephone_dispatcher = False
         self.persephone_queues = []
@@ -352,7 +353,7 @@ class Thread:
         stats = [self.id, self.time_busy, self.task_time, self.work_stealing_time, self.work_steal_wait_time,
                  self.enqueue_time, self.requeue_time,
                  self.successful_ws_time, self.unsuccessful_ws_time, self.allocation_time, self.non_work_conserving_time,
-                 self.distracted_time, self.unpaired_time, self.paired_time]
+                 self.distracted_time, self.unpaired_time, self.paired_time, max(self.idles)]
 
         if self.config.delay_flagging_enabled:
             stats += [self.flag_task_time, self.flag_wait_time]
@@ -363,7 +364,7 @@ class Thread:
     def get_stat_headers(config):
         headers = ["Thread ID", "Busy Time", "Task Time", "Work Stealing Time", "Work Steal Spin Time",
                    "Enqueue Time", "Requeue Time", "Successful Work Steal Time", "Unsuccessful Work Steal Time",
-                   "Allocation Time", "Non Work Conserving Time", "Distracted Time", "Unpaired Time", "Paired Time"]
+                   "Allocation Time", "Non Work Conserving Time", "Distracted Time", "Unpaired Time", "Paired Time", "Max Inverval Idle"]
         if config.delay_flagging_enabled:
             headers += ["Flag Task Time", "Flag Wait Time"]
         return headers

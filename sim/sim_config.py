@@ -17,7 +17,8 @@ class SimConfig:
                  ideal_reallocation=False, fred_reallocation=False, spin_parking_enabled=False, utilization_range_enabled=False,
                  allow_naive_idle=False, work_steal_park_enabled=False, bimodal_service_time=False, join_bounded_shortest_queue=False,
                  record_queue_lens=False, new_policy_enable=False, persephone_enable=False, persephone_total_reserved_cores=None, new_policy2_enable=False,
-                 quantum_preemption=0, rps=1000000):
+                 rps=1000000,
+                 preemption_enable=False, quantum_preemption=None, policy2_quantum_to_check_vqueue=None):
         # Basic configuration
         self.name = name
         self.description = ""
@@ -70,6 +71,9 @@ class SimConfig:
         self.OVERHEAD_SEARCH_ORPHAN_QUEUE = 5000
 
         self.new_policy2_enable = new_policy2_enable
+        self.policy2_quantum_to_check_vqueue = policy2_quantum_to_check_vqueue
+
+        self.preemption_enable = preemption_enable
         self.quantum_preemption = quantum_preemption
         self.PREEMPTION_OVERHEAD = 1000
 

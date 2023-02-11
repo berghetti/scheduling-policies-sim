@@ -349,7 +349,8 @@ class SimulationState:
         if config.join_bounded_shortest_queue:
             self.main_queue = Queue(-1, config, self)
 
-        self.virtual_queue = Queue(-1, config, self)
+        if config.new_policy2_enable:
+            self.virtual_queue = Queue(-1, config, self)
         # Initialize threads
 
         # new_policy

@@ -59,7 +59,7 @@
  "new_policy_enable": false,
 
  "new_policy2_enable": true,
- "policy2_time_to_check_vqueue": 20000,
+ "policy2_quantum_to_check_vqueue": 20000,
 
  "new_policy3_enable": false,
  "policy3_num_virtual_queues": 2,
