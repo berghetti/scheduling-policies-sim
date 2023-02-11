@@ -69,7 +69,7 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
         distracted_time += int(data[11])
         unpaired_time += int(data[12])
         paired_time += int(data[13])
-        if int(date[14]) > max_idle_interval:
+        if int(data[14]) > max_idle_interval:
             max_idle_interval = int(data[14])
         if len(data) > 15:
             flag_task_time += int(data[15])
@@ -196,7 +196,7 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
 
     data_string = "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}," \
                   "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}," \
-                  "{},{},{},{},{},{},{},{},{},{},{},{}".format(
+                  "{},{},{},{},{},{},{},{},{}".format(
         run_name[4:], meta_data["num_threads"], meta_data["sim_duration"], meta_data["AVERAGE_SERVICE_TIME"],
         meta_data["avg_system_load"], avg_load * 100, avg_task_load * 100, avg_ws_load * 100, percentiles[0],
         percentiles[1], percentiles[2], percentiles[3], slowdown_percentiles[0], slowdown_percentiles[1], percentil_short_requests, percentil_long_requests,
