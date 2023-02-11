@@ -35,7 +35,11 @@ class Simulation:
         """Run the simulation."""
 
         #new_policy check
-        print(self.config.PREEMPTION_OVERHEAD, self.config.quantum_preemption, self.config.rps)
+        print('P.V: {}\t P.Q: {}\t RPS: {}\tQ.VQ: {}'.format(
+            self.config.PREEMPTION_OVERHEAD,
+            self.config.quantum_preemption,
+            self.config.rps,
+            self.config.policy2_quantum_to_check_vqueue))
 
         #if self.config.new_policy_enable:
         #    print('Overhead search orphan queue: {}'.format(self.config.OVERHEAD_SEARCH_ORPHAN_QUEUE))

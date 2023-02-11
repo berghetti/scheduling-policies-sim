@@ -635,6 +635,7 @@ class QueueCheckTask(Task):
         #        self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
 
         elif self.config.new_policy2_enable:
+            self.thread.last_time_checked_vqueue = self.state.timer.get_time()
             if not self.thread.queue.work_available():
                 if self.state.virtual_queue.work_available():
                     self.thread.current_task = self.state.virtual_queue.dequeue()
@@ -647,17 +648,19 @@ class QueueCheckTask(Task):
                 else:
                     self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
                     return
-            #elif self.state.timer.get_time() - self.thread.last_time_checked_vqueue > self.config.policy2_quantum_to_check_vqueue:
-            #    self.thread.last_time_checked_vqueue = self.state.timer.get_time()
-            #    if self.state.virtual_queue.work_available():
-            #        self.thread.current_task = self.state.virtual_queue.dequeue()
-            #        self.thread.current_task.quantum_preempt = self.state.timer.get_time()
-            #        self.thread.current_task.preempted = False
-            #        self.thread.current_task.should_preempt = True
-            #        self.thread.current_task.original_queue = self.thread.queue.id
-            #        logging.info('{} | Thread {} get request {} from virtual queue because time check'.format(self.state.timer.get_time(), self.thread.id, self.thread.current_task))
-            #    else:
-            #        self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
+            elif self.state.timer.get_time() - self.thread.last_time_checked_vqueue > self.config.policy2_quantum_to_check_vqueue:
+                self.thread.last_time_checked_vqueue = self.state.timer.get_time()
+                if self.state.virtual_queue.work_available():
+                    self.thread.current_task = self.state.virtual_queue.dequeue()
+                    self.thread.current_task.quantum_preempt = self.state.timer.get_time()
+                    self.thread.current_task.preempted = False
+                    self.thread.current_task.should_preempt = True
+                    self.thread.current_task.original_queue = self.thread.queue.id
+                    logging.info('{} | Thread {} get request {} from virtual queue because time check'.format(self.state.timer.get_time(), self.thread.id, self.thread.current_task))
+                    return
+                else:
+                    self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
+                    return
 
 
         #print(self.thread.queue)
