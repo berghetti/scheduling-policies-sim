@@ -34,12 +34,17 @@ class Simulation:
     def run(self):
         """Run the simulation."""
 
-        #new_policy check
-        print('P.O: {}\t P.Q: {}\t RPS: {}\tQ.VQ: {}'.format(
-            self.config.PREEMPTION_OVERHEAD,
-            self.config.quantum_preemption,
-            self.config.rps,
-            self.config.policy2_quantum_to_check_vqueue))
+        if self.config.new_policy2_enable:
+            print('New policy2\nP.O: {}\t P.Q: {}\t RPS: {}\tQ.VQ: {}'.format(
+                self.config.PREEMPTION_OVERHEAD,
+                self.config.quantum_preemption,
+                self.config.rps,
+                self.config.policy2_quantum_to_check_vqueue))
+
+        if self.config.persephone_enable:
+            print('Persephone\n Overhead: {}\tReserved_cores: {}'.format(
+                  self.config.PERSEPHONE_OVERHEAD,
+                  self.config.persephone_total_reserved_cores))
 
         #if self.config.new_policy_enable:
         #    print('Overhead search orphan queue: {}'.format(self.config.OVERHEAD_SEARCH_ORPHAN_QUEUE))

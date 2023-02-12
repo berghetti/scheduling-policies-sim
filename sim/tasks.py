@@ -461,8 +461,10 @@ class OracleWorkStealTask(AbstractWorkStealTask):
 
 class persephone_dispatcher_task(Task):
     def __init__(self, thread, config, state ):
-        super().__init__(1, state.timer.get_time(), config, state)
+        super().__init__(config.PERSEPHONE_OVERHEAD,
+                         state.timer.get_time(), config, state)
         self.thread = thread
+        logging.info('{} | Thread {} starting persephone classifier'.format(self.state.timer.get_time(), self.thread.id))
 
     def process(self, time_increment=1):
         """Only spent overhead time if new request is wait
@@ -471,6 +473,7 @@ class persephone_dispatcher_task(Task):
 
     def on_complete(self):
         """Dispatch requests to worker cores, similar algorithm 1 on paper"""
+        logging.info('{} | Thread {} classifier ended'.format(self.state.timer.get_time(), self.thread.id))
 
         # queue[0] is short request, than always checked first
         for i, queue in enumerate(self.thread.persephone_queues):
@@ -485,7 +488,8 @@ class persephone_dispatcher_task(Task):
 
                     # check if worker reserverd and free
                     if worker_core.persephone_reserved and not \
-                       worker_core.is_productive():
+                            worker_core.is_productive() and \
+                            worker_core.queue.length() == 0:
                         worker = worker_core
                         break
 
@@ -496,15 +500,18 @@ class persephone_dispatcher_task(Task):
                        worker_core.persephone_reserved:
                         continue
 
-                    if not worker_core.is_productive():
+                    if not worker_core.is_productive() and \
+                            worker_core.queue.length() == 0:
                         worker = worker_core
                         break
 
             if worker != None:
                 request = queue.dequeue()
-                # classifier overhead
-                request.time_left += self.config.PERSEPHONE_OVERHEAD
                 worker.queue.enqueue(request, set_original=False)
+                logging.info('{} | Thread {} dispatching {} to worker {}'
+                             .format(self.state.timer.get_time(),
+                                     self.thread.id, request,
+                                     worker.id))
 
 class new_policy_watchdog_core_task(Task):
 
@@ -597,14 +604,14 @@ class QueueCheckTask(Task):
 
         self.locked_out = not self.thread.queue.try_get_lock(self.thread.id)
         # If no work stealing and there's nothing to get, start spin
-        #if (not self.config.new_policy2_enable and not config.work_stealing_enabled and config.LOCAL_QUEUE_CHECK_TIME == 0 and \
-        #        not (self.thread.queue.work_available() or self.locked_out) ):
-        #    if not config.allow_naive_idle:
-        #        self.start_work_search_spin = True
-        #    else:
-        #        self.service_time = 1
-        #        self.time_left = 1
-        #        self.is_idle = True
+        if (not self.config.new_policy2_enable and not config.work_stealing_enabled and config.LOCAL_QUEUE_CHECK_TIME == 0 and \
+                not (self.thread.queue.work_available() or self.locked_out) ):
+            if not config.allow_naive_idle:
+                self.start_work_search_spin = True
+            else:
+                self.service_time = 1
+                self.time_left = 1
+                self.is_idle = True
 
     def on_complete(self):
         """Grab new task from queue if available."""
@@ -624,14 +631,14 @@ class QueueCheckTask(Task):
             self.thread.work_search_state.advance()
 
         # If reallocation replay, no work available, and have searched the minimum time, fill the time
-        #elif not self.config.new_policy2_enable and self.config.reallocation_replay and not \
-        #        self.thread.queue.work_available() \
-        #        and (self.state.timer.get_time() - self.thread.work_search_state.search_start_time) + 1 \
-        #        < self.config.MINIMUM_WORK_SEARCH_TIME:
-        #    if self.config.LOCAL_QUEUE_CHECK_TIME != 0:
-        #        self.thread.work_search_state.reset(clear_start_time=False)
-        #    else:
-        #        self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
+        elif not self.config.new_policy2_enable and self.config.reallocation_replay and not \
+                self.thread.queue.work_available() \
+                and (self.state.timer.get_time() - self.thread.work_search_state.search_start_time) + 1 \
+                < self.config.MINIMUM_WORK_SEARCH_TIME:
+            if self.config.LOCAL_QUEUE_CHECK_TIME != 0:
+                self.thread.work_search_state.reset(clear_start_time=False)
+            else:
+                self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
 
         elif self.config.new_policy2_enable:
             if not self.thread.queue.work_available():
@@ -704,6 +711,7 @@ class QueueCheckTask(Task):
                     self.thread.current_task = request
 
             else:
+                logging.info('{} | Thread {} received request {}'.format(self.state.timer.get_time(), self.thread.id, request))
                 self.thread.current_task = request
 
 

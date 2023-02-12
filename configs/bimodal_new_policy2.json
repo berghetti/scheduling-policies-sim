@@ -1,5 +1,6 @@
 {
- "avg_system_load": 1,
+ "avg_system_load": 0.75,
+ "rps": 10000000,
  "num_queues": 14,
  "num_threads": 14,
  "mapping": [
@@ -56,7 +57,14 @@
  "record_queue_lens": false,
 
  "new_policy_enable": false,
+
  "new_policy2_enable": true,
+ "policy2_quantum_to_check_vqueue": 15000,
+
+ "preemption_enable": true,
+ "quantum_preemption": 10000,
+ "PREEMPTION_OVERHEAD" : 3000,
+
  "OVERHEAD_SEARCH_ORPHAN_QUEUE": 300,
 
  "SHORT_REQUEST_SERVICE_TIME": 1000,
