@@ -105,6 +105,7 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
     next(task_file) # skip first line
     for line in task_file:
         data = line.split(",")
+        #print(data)
         if int(data[0]) > time_dropped * stats["End Time"] and int(data[1]) >= 0:
             total_tasks += 1
             task_latencies.append(int(data[1]))

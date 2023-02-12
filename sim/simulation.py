@@ -174,7 +174,7 @@ class Simulation:
     def persephone_get_queue_dispatcher(self, task):
         """Retorn  appropriate queue from core dispatcher based on task,
            queue[0] is short request and queue[1] is long request
-           queue[0] is first checked on dispatcher to worker cores"""
+           queue[0] is first checked on dispatching to worker cores"""
 
         for core in self.state.threads:
             if not core.persephone_dispatcher: continue

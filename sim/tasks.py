@@ -47,7 +47,8 @@ class Task:
         """Return predicted completion time based on time left."""
         if self.config.preemption_enable and \
             self.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
-            return min(self.state.timer.get_time() + self.config.quantum_preemption - (self.state.timer.get_time() - self.quantum_preempt), # time left to preemption
+            return min(self.state.timer.get_time() + self.config.quantum_preemption \
+                       - (self.state.timer.get_time() - self.quantum_preempt), # time left to preemption
                        self.state.timer.get_time() + self.time_left)
 
         return self.state.timer.get_time() + self.time_left
@@ -117,9 +118,10 @@ class Task:
 
     def requeue_wait_time(self):
         """Returns time that the task spent not in its final queue."""
-        if self.requeue_time is None:
-            return 0
-        return self.requeue_time - self.arrival_time + 1
+        return 0
+        #if self.requeue_time is None:
+        #    return 0
+        #return self.requeue_time - self.arrival_time + 1
 
     def descriptor(self):
         return "Task (arrival {}, service time {}, original queue: {})".format(
@@ -650,7 +652,8 @@ class QueueCheckTask(Task):
                     self.thread.current_task.preempted = False
                     self.thread.current_task.should_preempt = True
                     self.thread.current_task.original_queue = self.thread.queue.id
-                    logging.info('{} | Thread {} get request {} from virtual queue because idle'.format(self.state.timer.get_time(), self.thread.id, self.thread.current_task))
+                    logging.info('{} | Thread {} get request {} from virtual queue because idle'
+                                 .format(self.state.timer.get_time(), self.thread.id, self.thread.current_task))
                     return
                 else:
                     self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
@@ -675,7 +678,6 @@ class QueueCheckTask(Task):
         #print(self.thread.queue)
         # If work is available, take it
         if self.thread.queue.work_available():
-            #logging.info('Checking thread {}'.format(self.thread))
 
             request = self.thread.queue.dequeue()
             self.thread.queue.unlock(self.thread.id)
@@ -709,6 +711,15 @@ class QueueCheckTask(Task):
                     logging.info('{} | Sended to virtual queue {}'.format(self.state.timer.get_time(), self.state.virtual_queue))
                 else:
                     self.thread.current_task = request
+                #if request.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
+                #    logging.info('{} | Thread {} received LONG_REQUEST {}'.format(self.state.timer.get_time(), self.thread.id, request))
+                #    self.thread.last_time_checked_vqueue = self.state.timer.get_time()
+                #    request.quantum_preempt = self.state.timer.get_time()
+                #    request.preempted = False
+                #    request.should_preempt = True
+                #    request.original_queue = self.thread.queue.id
+
+                #self.thread.current_task = request
 
             else:
                 logging.info('{} | Thread {} received request {}'.format(self.state.timer.get_time(), self.thread.id, request))

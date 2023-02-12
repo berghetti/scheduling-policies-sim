@@ -12,5 +12,5 @@ FILE=$(tail -n 1 ./results/meta_log | awk -F': ' '{print $1}')
 FILE_OUT="${FILE}_$2_out.csv"
 python3 analysis.py $FILE $FILE_OUT 0
 
-awk -F, '{print($11 "," $9 "," $12 "," $10 "," $13 "," $14 "," $19 "," $20 "," $49)}' $FILE_OUT | column --separator , -t
+awk -F, '{print($11 "," $9 "," $12 "," $10 "," $13 "," $14 "," $19 "," $20 "," $50)}' $FILE_OUT | column --separator , -t
 
