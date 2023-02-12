@@ -657,7 +657,8 @@ class QueueCheckTask(Task):
                     self.thread.current_task.preempted = False
                     self.thread.current_task.should_preempt = True
                     self.thread.current_task.original_queue = self.thread.queue.id
-                    logging.info('{} | Thread {} get request {} from virtual queue because time check'.format(self.state.timer.get_time(), self.thread.id, self.thread.current_task))
+                    logging.info('{} | Thread {} get request {} from virtual queue because time check'
+                                 .format(self.state.timer.get_time(), self.thread.id, self.thread.current_task))
                     return
                 else:
                     self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)

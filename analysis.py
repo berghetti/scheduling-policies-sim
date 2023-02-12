@@ -18,7 +18,7 @@ CSV_HEADER = "Run ID,Cores,Sim Duration,Average Task Duration,Load,CPU Load,Task
              "Task Time,Distracted Time,Unpaired Time,Paired Time,Average Requeue Wait Time,Flag Task Time,Avg Time From Alloc to Task," \
              "Avg Steals Per Task,Flag Response Rate,Flag Rate,Tasks Flag Stolen,Average Steals Per Flag,Avg Core Flag Wait Time," \
              "Avg Task Flag Wait Time,Avg Queueing Time,Avg High Latency Task Flag Wait Time,Avg Flag Set Delay Time,Avg High Latency Flag Set Delay Time," \
-             "Avg Flagged Task Service Time,Avg Flagged Task Time Left,Pct Flagged Queues Non-empty,Description"
+             "Avg Flagged Task Service Time,Avg Flagged Task Time Left,Pct Flagged Queues Non-empty,Description, 99% Idle Interval"
 
 LONG_REQUEST_SERVICE_TIME = 100000
 
@@ -51,7 +51,7 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
     paired_time = 0
     flag_task_time = 0
     flag_wait_time = 0
-    max_idle_interval = 0
+    idle_intervals = []
 
     next(cpu_file) # skip first line
     for line in cpu_file:
@@ -69,14 +69,14 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
         distracted_time += int(data[11])
         unpaired_time += int(data[12])
         paired_time += int(data[13])
-        t = int(float(data[14]))
-        if t > max_idle_interval:
-            max_idle_interval = t
+        idle_intervals.append(int(float(data[14])))
         if len(data) > 15:
             flag_task_time += int(data[15])
             flag_wait_time += int(data[16])
 
     cpu_file.close()
+
+    idle_interval = np.percentile(idle_intervals, 99)
 
     cores = meta_data["num_threads"]
     avg_load = (busy_time/(cores * stats["End Time"]))
@@ -207,7 +207,7 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
         avg_flag_steals_per_task, flag_steal_rate, flag_rate, percent_flag_stolen * 100, average_steals_per_flag,
         avg_core_flag_wait_time * 100, avg_task_flag_wait_time, avg_queueing_time, avg_core_flag_wait_time_99,
         avg_flag_set_delay_time, avg_flag_set_delay_time_99, avg_flagged_service_time, avg_flagged_time_left, pct_flagged_queues_empty * 100,
-        "\"{}\"".format(meta_data["description"]), max_idle_interval)
+        "\"{}\"".format(meta_data["description"]), idle_interval)
     output_file.write(data_string + "\n")
 
 
