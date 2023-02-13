@@ -68,6 +68,18 @@ Example: `python3 run_sim.py config.json -varycores "work stealing static alloca
 * `join_bounded_shortest_queue`: (bool) Enables the load balancing policy in which tasks join a central queue and individual queues pull to maintain a certain length.
 * `record_queue_lens`: (bool) If enabled, record queue lengths at each reallocation decision.
 
+* `new_policy2_enable`: (bool) Enable new policy based on preemption and virtual queue to long requests
+* `policy2_quantum_to_check_vqueue`: (int) value to periodic check by tasks in virtual queue
+
+* `oreemption_enable`: (bool) Enable preemption
+* `quantum_preemption`: (int) Value max than a task can run before preempt
+* `PREEMPTION_OVERHEAD`: (int) Overhead preemption
+
+* `SHORT_REQUEST_SERVICE_TIME`: (int) Service time to short requests if bimodal distribuition
+* `LONG_REQUEST_SERVICE_TIME`: (int) Service time to long requests if bimodal distribuition
+
+* `rps`: (int) requests by second
+
 ##### Constants
 * `AVERAGE_SERVICE_TIME`: (int) Average service time of tasks in ns.
 * `WORK_STEAL_CHECK_TIME`: (int) Time to check if a core can be stolen from in ns.
