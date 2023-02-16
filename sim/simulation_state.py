@@ -53,6 +53,10 @@ class SimulationState:
 
         self.attempted_flag_steals = 0
 
+        # persephone core with specific function
+        self.persephone_classifier = None
+        self.persephone_dispatcher = None
+
         self.active_watchdog = False
         self.virtual_queue = None
 
@@ -378,13 +382,18 @@ class SimulationState:
 
         # static persephone reserved cores and dispatcher core
         if config.persephone_enable:
+            self.persephone_dispatcher = self.threads[0]
             self.threads[0].persephone_dispatcher = True
-            self.threads[0].persephone_queues.append(Queue(10, config, self))
+            self.threads[0].persephone_queues.append(Queue(100, config, self))
             self.threads[0].persephone_queues[0].set_thread(0)
-            self.threads[0].persephone_queues.append(Queue(20, config, self))
+            self.threads[0].persephone_queues.append(Queue(200, config, self))
             self.threads[0].persephone_queues[1].set_thread(0)
 
-            for i in range(1, config.persephone_total_reserved_cores + 1):
+            self.persephone_classifier = self.threads[1]
+            self.persephone_classifier.persephone_classifier = True
+
+
+            for i in range(2, config.persephone_total_reserved_cores + 1):
                 self.threads[i].persephone_reserved = True
 
         # Set siblings

@@ -5,7 +5,7 @@ import random
 import logging
 import numpy as np
 from work_search_state import WorkSearchState
-from tasks import WorkSearchSpin, WorkStealTask, Task, EnqueuePenaltyTask, RequeueTask, ReallocationTask, FlagStealTask, QueueCheckTask, OracleWorkStealTask, IdleTask, persephone_dispatcher_task, new_policy_watchdog_core_task, Overhead_preepmtion_task
+from tasks import WorkSearchSpin, WorkStealTask, Task, EnqueuePenaltyTask, RequeueTask, ReallocationTask, FlagStealTask, QueueCheckTask, OracleWorkStealTask, IdleTask, persephone_dispatcher_task, new_policy_watchdog_core_task, Overhead_preepmtion_task, persephone_classifier_task
 
 
 class Thread:
@@ -66,10 +66,10 @@ class Thread:
         self.last_time_idle = 0
         self.idles = []
 
-
-        self.persephone_dispatcher = False
-        self.persephone_queues = []
-        self.persephone_reserved = False
+        self.persephone_classifier = False # one core is the classifier
+        self.persephone_dispatcher = False # one core is the dispatcher
+        self.persephone_queues = [] # multqueues from dispatcher
+        self.persephone_reserved = False # core reserved to short requests
 
         self.config = config
         self.state = state
@@ -267,6 +267,10 @@ class Thread:
             self.process_task()
 
         # persephone dispatcher
+        elif self.config.persephone_enable and self.persephone_classifier:
+            self.current_task = persephone_classifier_task(self, self.config, self.state)
+            self.process_task()
+
         elif self.config.persephone_enable and self.persephone_dispatcher:
             self.current_task = persephone_dispatcher_task(self, self.config, self.state)
             self.process_task()
