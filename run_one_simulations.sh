@@ -6,7 +6,7 @@ if [ "$#" -ne 2 ]; then
     echo "Usage $0 config.json description"
 fi
 
-python3 ./sim/simulation.py $1 $2
+python3 ./sim/simulation.py $1 $2 $3
 
 
 FILE=$(tail -n 1 ./results/meta_log | awk -F': ' '{print $1}')

@@ -42,11 +42,15 @@ class sim_multiple:
 if __name__ == "__main__":
     time = datetime.now().strftime("%y-%m-%d_%H:%M:%S")
 
-    loads = list(range(5, 105, 5))
+    if len(sys.argv) == 4:
+        rps = int(sys.argv[3])
+        loads = [rps] * 5
+    #loads = list(range(10, 60, 10)) + list(range(60, 85, 5))
+    #loads = list(range(135, 175, 5))
     preempt_quantuns = list(range(1000, 16000, 1000))
     vcheck_quantuns = list(range(1000, 16000, 1000))
     preempt_overheads = list(range(1000, 3200, 200))
-    persephone_overheads = list(range(100, 310, 20))
+    persephone_overheads = list(range(100, 220, 10))
     threads = []
     cores = None
     description = ""
@@ -98,10 +102,10 @@ if __name__ == "__main__":
 
     else:
         #print(loads)
-        #for i, load in enumerate(loads):
+        for i, load in enumerate(loads):
         #for i, quantum in enumerate(preempt_quantuns):
         #for i, quantum in enumerate(vcheck_quantuns):
-        for i, overhead in enumerate(preempt_overheads):
+        #for i, overhead in enumerate(preempt_overheads):
         #for i, persephone_overhead in enumerate(persephone_overheads):
             name = MULTI_THREAD_SIM_NAME_FORMAT.format(os.uname().nodename, time, i)
 
@@ -111,10 +115,11 @@ if __name__ == "__main__":
                     name_parts = cfg.reallocation_record.split("_", 1)
                     cfg.reallocation_record = MULTI_THREAD_SIM_NAME_FORMAT.format(name_parts[0], name_parts[1], i)
                 #cfg.avg_system_load = load / 100
+                cfg.rps = load * 100000
                 #cfg.policy2_quantum_to_check_vqueue = quantum
                 #cfg.quantum_preemption = quantum
                 #cfg.PREEMPTION_OVERHEAD = overhead
-                cfg.PERSEPHONE_OVERHEAD = persephone_overhead
+                #cfg.PERSEPHONE_OVERHEAD = persephone_overhead
                 cfg.name = name
                 cfg.progress_bar = (i == 0)
                 cfg.description = description

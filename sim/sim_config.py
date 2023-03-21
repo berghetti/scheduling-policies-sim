@@ -85,6 +85,8 @@ class SimConfig:
         # requests per second
         self.rps = rps
 
+        self.cfcfs_enable = False
+
         # to bimodal distribuitions
         self.SHORT_REQUEST_SERVICE_TIME = 500 # 0.5us
         self.LONG_REQUEST_SERVICE_TIME = 100000 # 100us

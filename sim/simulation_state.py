@@ -336,6 +336,7 @@ class SimulationState:
         if config.reallocation_replay:
             random.seed(config.reallocation_record)
         else:
+            print('Seed: {}'.format(config.name))
             random.seed(config.name)
 
         # Set reallocation schedule if replaying one
@@ -379,6 +380,9 @@ class SimulationState:
                 self.threads.append(Thread(queue, i, config, self))
                 queue.set_thread(i)
 
+
+        #if config.cfcfs_enable:
+        #    self.threads[0].is_dispatcher = True
 
         # static persephone reserved cores and dispatcher core
         if config.persephone_enable:

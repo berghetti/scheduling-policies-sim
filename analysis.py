@@ -11,8 +11,9 @@ TASK_FILE_NAME = "task_times.csv"
 META_FILE_NAME = "meta.json"
 STATS_FILE_NAME = "stats.json"
 QUEUES_FILE_NAME = "queues.json"
-CSV_HEADER = "Run ID,Cores,Sim Duration,Average Task Duration,Load,CPU Load,Task Load,Work Steal Load," \
+CSV_HEADER = "Run ID,Cores,Sim Duration,PERSEPHONE_OVERHEAD,Average Task Duration,Load,CPU Load,Task Load,Work Steal Load," \
              "95% Tail Latency,99.9% Tail Latency,Median Latency,99% Tail Latency,Slowdown 99%,Slowdown99.9%,latency_short 99.9%,latency_long 99.9%," \
+             "50% latency_short, 50% latency_long,"\
              "Tasks Stolen,Average Number of Steals,Throughput, orphan_count, orphan time 99.9%" \
              "Real Load, Parks Per Second,Successful Work Steal Time,Unsuccessful Work Steal Time,Non Work Conserving Time,Allocation Time," \
              "Task Time,Distracted Time,Unpaired Time,Paired Time,Average Requeue Wait Time,Flag Task Time,Avg Time From Alloc to Task," \
@@ -138,6 +139,9 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
     percentil_long_requests = np.percentile(task_latencies_long, 99.9) if len(task_latencies_long) > 0 else 0
     percentil_short_requests = np.percentile(task_latencies_short, 99.9) if len(task_latencies_short) > 0 else 0
 
+    percentil50_long_requests = np.percentile(task_latencies_long, 50) if len(task_latencies_long) > 0 else 0
+    percentil50_short_requests = np.percentile(task_latencies_short, 50) if len(task_latencies_short) > 0 else 0
+
     slowdown_percentiles = np.percentile(task_slowdown, [99, 99.9])
 
     orphan_times = []
@@ -198,10 +202,11 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
 
     data_string = "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}," \
                   "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}," \
-                  "{},{},{},{},{},{},{},{},{},{}".format(
-        run_name[4:], meta_data["num_threads"], meta_data["sim_duration"], meta_data["AVERAGE_SERVICE_TIME"],
+                  "{},{},{},{},{},{},{},{},{},{},{},{},{}".format(
+        run_name[4:], meta_data["num_threads"], meta_data["sim_duration"], meta_data["PERSEPHONE_OVERHEAD"], meta_data["AVERAGE_SERVICE_TIME"],
         meta_data["avg_system_load"], avg_load * 100, avg_task_load * 100, avg_ws_load * 100, percentiles[0],
         percentiles[1], percentiles[2], percentiles[3], slowdown_percentiles[0], slowdown_percentiles[1], percentil_short_requests, percentil_long_requests,
+        percentil50_short_requests, percentil50_long_requests,
         percent_stolen * 100, avg_steals, throughput, len(orphan_times), orphan_time_percentile, real_load * 100,
         (stats["Global Park Count"]/stats["End Time"]) * 10**9, successful_ws_time, unsuccessful_ws_time, non_work_conserving_time,
         allocation_time, task_time, distracted_time, unpaired_time, paired_time, avg_requeue_wait_time, flag_task_time, avg_time_from_alloc_to_task,

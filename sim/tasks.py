@@ -460,6 +460,27 @@ class OracleWorkStealTask(AbstractWorkStealTask):
         return "Oracle Work Stealing Task (arrival {}, thread {})".format(
             self.arrival_time, self.thread.id)
 
+class dispatcher_task(Task):
+    def __init__(self, thread, config, state):
+        super().__init__(50, state.timer.get_time(), config, state)
+        self.thread = thread
+
+    def process(self, time_increment=1):
+        if self.thread.queue.length() > 0:
+            logging.info('{} | Thread {} dispatching spent overhead {}'.format(self.state.timer.get_time(), self.thread.id, time_increment))
+            super().process(time_increment=time_increment)
+
+    def on_complete(self):
+        for core in self.state.threads:
+            if core.is_dispatcher:
+                continue
+
+            if not core.is_productive() and \
+                core.queue.length() == 0:
+                logging.info('{} | Thread {} dispatching to core {}'.format(self.state.timer.get_time(), self.thread.id, core.id))
+                core.queue.enqueue(self.thread.queue.dequeue(), set_original=True)
+                break
+
 
 class persephone_classifier_task(Task):
     def __init__(self, thread, config, state ):
@@ -480,7 +501,7 @@ class persephone_classifier_task(Task):
 
     def on_complete(self):
         request = self.thread.queue.dequeue()
-        queue = None # queue o is short request queue 1 is long request in persephone dispatcher
+        queue = None # queue 0 is short request queue 1 is long request in persephone dispatcher
         if request.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
             queue = 1
         else:
@@ -690,23 +711,24 @@ class QueueCheckTask(Task):
                 else:
                     self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
                     return
-            elif self.state.timer.get_time() - self.thread.last_time_checked_vqueue > self.config.policy2_quantum_to_check_vqueue:
-                self.thread.last_time_checked_vqueue = self.state.timer.get_time()
-                if self.state.virtual_queue.work_available():
-                    self.thread.last_time_checked_vqueue += self.config.PREEMPTION_OVERHEAD + self.config.quantum_preemption
-                    self.thread.current_task = self.state.virtual_queue.dequeue()
-                    self.thread.current_task.quantum_preempt = self.state.timer.get_time()
-                    self.thread.current_task.preempted = False
-                    self.thread.current_task.should_preempt = True
-                    self.thread.current_task.original_queue = self.thread.queue.id
-                    logging.info('{} | Thread {} get request {} from virtual queue because time check'
-                                 .format(self.state.timer.get_time(), self.thread.id, self.thread.current_task))
-                    return
-                else:
-                    self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
-                    return
+            # force check wait queue
+            #elif self.state.timer.get_time() - self.thread.last_time_checked_vqueue > self.config.policy2_quantum_to_check_vqueue:
+            #    self.thread.last_time_checked_vqueue = self.state.timer.get_time()
+            #    if self.state.virtual_queue.work_available():
+            #        self.thread.last_time_checked_vqueue += self.config.PREEMPTION_OVERHEAD + self.config.quantum_preemption
+            #        self.thread.current_task = self.state.virtual_queue.dequeue()
+            #        self.thread.current_task.quantum_preempt = self.state.timer.get_time()
+            #        self.thread.current_task.preempted = False
+            #        self.thread.current_task.should_preempt = True
+            #        self.thread.current_task.original_queue = self.thread.queue.id
+            #        logging.info('{} | Thread {} get request {} from virtual queue because time check'
+            #                     .format(self.state.timer.get_time(), self.thread.id, self.thread.current_task))
+            #        return
+            #    else:
+            #        self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
+            #        return
 
-
+############################################################
         #print(self.thread.queue)
         # If work is available, take it
         if self.thread.queue.work_available():

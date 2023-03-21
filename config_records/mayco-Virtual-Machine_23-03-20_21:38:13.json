@@ -1,6 +1,6 @@
 {
  "avg_system_load": 1,
- "rps": 20000000,
+ "rps": 7000000,
  "num_queues": 16,
  "num_threads": 16,
  "mapping": [
@@ -57,6 +57,16 @@
  "bimodal_service_time": true,
  "join_bounded_shortest_queue": false,
  "record_queue_lens": false,
+
+ "new_policy_enable": false,
+
+ "new_policy2_enable": true,
+ "policy2_quantum_to_check_vqueue": 50000,
+
+ "preemption_enable": true,
+ "quantum_preemption": 5000,
+ "PREEMPTION_OVERHEAD" : 1000,
+
 
  "SHORT_REQUEST_SERVICE_TIME": 1000,
  "LONG_REQUEST_SERVICE_TIME": 100000,
