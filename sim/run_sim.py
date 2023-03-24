@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     if len(sys.argv) == 4:
         rps = int(sys.argv[3])
-        loads = [rps] * 5
+        loads = [rps] * 10
     #loads = list(range(10, 60, 10)) + list(range(60, 85, 5))
     #loads = list(range(135, 175, 5))
     preempt_quantuns = list(range(1000, 16000, 1000))

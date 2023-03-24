@@ -336,7 +336,7 @@ class SimulationState:
         if config.reallocation_replay:
             random.seed(config.reallocation_record)
         else:
-            print('Seed: {}'.format(config.name))
+            #print('Seed: {}'.format(config.name))
             random.seed(config.name)
 
         # Set reallocation schedule if replaying one
