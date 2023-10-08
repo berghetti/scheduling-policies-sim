@@ -90,6 +90,7 @@ class SimConfig:
         # to bimodal distribuitions
         self.SHORT_REQUEST_SERVICE_TIME = 500 # 0.5us
         self.LONG_REQUEST_SERVICE_TIME = 100000 # 100us
+        self.SHORT_REQUEST_RATE = 90 # 90% shorts and 10 % longs
 
         # Constants
         self.AVERAGE_SERVICE_TIME = 1000

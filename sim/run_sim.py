@@ -42,10 +42,10 @@ class sim_multiple:
 if __name__ == "__main__":
     time = datetime.now().strftime("%y-%m-%d_%H:%M:%S")
 
+    loads = list(range(10, 60, 10)) + list(range(60, 85, 5))
     if len(sys.argv) == 4:
         rps = int(sys.argv[3])
         loads = [rps] * 10
-    #loads = list(range(10, 60, 10)) + list(range(60, 85, 5))
     #loads = list(range(135, 175, 5))
     preempt_quantuns = list(range(1000, 16000, 1000))
     vcheck_quantuns = list(range(1000, 16000, 1000))
@@ -115,7 +115,7 @@ if __name__ == "__main__":
                     name_parts = cfg.reallocation_record.split("_", 1)
                     cfg.reallocation_record = MULTI_THREAD_SIM_NAME_FORMAT.format(name_parts[0], name_parts[1], i)
                 #cfg.avg_system_load = load / 100
-                cfg.rps = load * 100000
+                cfg.rps = load * 1000
                 #cfg.policy2_quantum_to_check_vqueue = quantum
                 #cfg.quantum_preemption = quantum
                 #cfg.PREEMPTION_OVERHEAD = overhead

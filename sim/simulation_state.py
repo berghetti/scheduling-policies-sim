@@ -407,21 +407,29 @@ class SimulationState:
             else:
                 self.threads[i].sibling = self.threads[i - 1]
 
+        total_requests = 0
+        total_requests_short = 0
+        total_requests_long = 0
+
         # Set tasks and arrival times
         #request_rate = config.avg_system_load * config.load_thread_count / config.AVERAGE_SERVICE_TIME
         request_rate = config.avg_system_load * config.rps / 10 ** 9
         next_task_time = int(1/request_rate) if config.regular_arrivals else int(random.expovariate(request_rate))
-        if config.bimodal_service_time:
-            distribution = [config.SHORT_REQUEST_SERVICE_TIME] * 199 + [config.LONG_REQUEST_SERVICE_TIME]
         i = 0
         while (config.sim_duration is None or next_task_time < config.sim_duration) and \
                 (config.num_tasks is None or i < config.num_tasks):
             service_time = None
             while service_time is None or service_time == 0:
+                total_requests += 1
                 if config.constant_service_time:
                     service_time = config.AVERAGE_SERVICE_TIME
                 elif config.bimodal_service_time:
-                    service_time = random.choice(distribution)
+                    if random.randint(0, 99) < config.SHORT_REQUEST_RATE:
+                        total_requests_short += 1
+                        service_time = config.SHORT_REQUEST_SERVICE_TIME
+                    else:
+                        total_requests_long += 1
+                        service_time = config.LONG_REQUEST_SERVICE_TIME
                 else:
                     service_time = int(random.expovariate(1 / config.AVERAGE_SERVICE_TIME))
 
@@ -435,3 +443,5 @@ class SimulationState:
             if config.progress_bar and i % 100 == 0:
                 progress.print_progress(next_task_time, config.sim_duration, decimals=3, length=50)
             i += 1
+
+        #print("total:{}\n  short:{}\n  longs:{}\n".format(total_requests, total_requests_short, total_requests_long))
