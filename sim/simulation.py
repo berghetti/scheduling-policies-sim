@@ -173,24 +173,6 @@ class Simulation:
         # When the simulation is complete, record final stats
         self.state.add_final_stats()
 
-    def persephone_get_queue_dispatcher(self, task):
-        """Retorn  appropriate queue from core dispatcher based on task,
-           queue[0] is short request and queue[1] is long request
-           queue[0] is first checked on dispatching to worker cores"""
-
-        for core in self.state.threads:
-            if not core.persephone_dispatcher: continue
-
-            if task.service_time == self.config.SHORT_REQUEST_SERVICE_TIME:
-                #print(core.persephone_queues[0])
-                return core.persephone_queues[0]
-            else:
-                return core.persephone_queues[1]
-
-        print('Persephone dispatcher not set')
-        exit(1)
-
-
     def choose_enqueue(self, num_choices):
         """Choose a queue to place a new task on by current queueing delay."""
         if num_choices > len(self.state.available_queues):
