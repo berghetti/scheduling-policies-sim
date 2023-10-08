@@ -5,7 +5,7 @@ import random
 import logging
 import numpy as np
 from work_search_state import WorkSearchState
-from tasks import WorkSearchSpin, WorkStealTask, Task, EnqueuePenaltyTask, RequeueTask, ReallocationTask, FlagStealTask, QueueCheckTask, OracleWorkStealTask, IdleTask, persephone_dispatcher_task, new_policy_watchdog_core_task, Overhead_preepmtion_task, persephone_classifier_task, dispatcher_task
+from tasks import WorkSearchSpin, WorkStealTask, Task, EnqueuePenaltyTask, RequeueTask, ReallocationTask, FlagStealTask, QueueCheckTask, OracleWorkStealTask, IdleTask, new_policy_watchdog_core_task, Overhead_preepmtion_task, persephone_task, dispatcher_task
 
 
 class Thread:
@@ -66,12 +66,10 @@ class Thread:
         self.last_time_idle = 0
         self.idles = []
 
-        self.persephone_classifier = False # one core is the classifier
-        self.persephone_dispatcher = False # one core is the dispatcher
+        # persephone related
+        self.is_persephone_dispatcher = False # one core is the dispatcher
         self.persephone_queues = [] # multqueues from dispatcher
         self.persephone_reserved = False # core reserved to short requests
-
-        self.is_dispatcher = False
 
         self.config = config
         self.state = state
@@ -268,23 +266,10 @@ class Thread:
             self.current_task = EnqueuePenaltyTask(self, self.config, self.state)
             self.process_task()
 
-        #elif self.config.cfcfs_enable and self.is_dispatcher:
-        #    self.current_task = dispatcher_task(self, self.config, self.state)
-        #    self.process_task()
-
         # persephone dispatcher
-        elif self.config.persephone_enable and self.persephone_classifier:
-            self.current_task = persephone_classifier_task(self, self.config, self.state)
+        elif self.config.persephone_enable and self.is_persephone_dispatcher:
+            self.current_task = persephone_task(self, self.config, self.state)
             self.process_task()
-
-        elif self.config.persephone_enable and self.persephone_dispatcher:
-            self.current_task = persephone_dispatcher_task(self, self.config, self.state)
-            self.process_task()
-
-        # new_policy watchdog core
-        #elif self.config.new_policy_enable and self.queue == -1:
-        #    self.current_task = new_policy_watchdog_core_task(self, self.config, self.state)
-        #    self.process_task()
 
         # If thread is allocating, start allocation task
         elif self.work_search_state == WorkSearchState.ALLOCATING:

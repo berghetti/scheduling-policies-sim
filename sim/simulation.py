@@ -105,9 +105,7 @@ class Simulation:
                     self.state.threads[0].queue.enqueue(self.state.tasks[task_number], set_original=False)
 
                 elif self.config.persephone_enable:
-                    self.state.persephone_classifier.queue.enqueue(self.state.tasks[task_number])
-                    #queue = self.persephone_get_queue_dispatcher(self.state.tasks[task_number])
-                    #queue.enqueue(self.state.tasks[task_number], set_original=True)
+                    self.state.persephone_dispatcher.queue.enqueue(self.state.tasks[task_number])
 
                 else:
                     chosen_queue = random.choice(self.state.available_queues)

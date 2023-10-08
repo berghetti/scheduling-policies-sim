@@ -482,7 +482,7 @@ class dispatcher_task(Task):
                 break
 
 
-class persephone_classifier_task(Task):
+class persephone_task(Task):
     def __init__(self, thread, config, state ):
         super().__init__(config.PERSEPHONE_OVERHEAD, state.timer.get_time(), config, state)
         self.thread = thread
@@ -490,14 +490,15 @@ class persephone_classifier_task(Task):
         self.state = state
         logging.info('{} | Thread {} starting persephone classifier task'.format(self.state.timer.get_time(), self.thread.id))
 
+    # classifier overhead only spent time if request is awaiting
     def process(self, time_increment=1):
-        if not self.thread.queue.work_available():
-            """ Not spent task time """
-            logging.info('{} | Thread {} not work available skipping'.format(self.state.timer.get_time(), self.thread.id))
-        else:
+        if self.thread.queue.work_available():
             """ Spent PERSEPHONE_OVERHEAD becore classifier request """
             super().process(time_increment=time_increment)
             logging.info('{} | Thread {} spent classifier overhead time left {}'.format(self.state.timer.get_time(), self.thread.id, self.time_left))
+        #else:
+        #    """ Not spent task time """
+            #logging.info('{} | Thread {} not work available skipping'.format(self.state.timer.get_time(), self.thread.id))
 
     def on_complete(self):
         request = self.thread.queue.dequeue()
@@ -510,19 +511,14 @@ class persephone_classifier_task(Task):
         logging.info('{} | Thread {} send request {} to dispatcher on queue {}'
                      .format(self.state.timer.get_time(), self.thread.id, request, self.state.persephone_dispatcher.persephone_queues[queue]))
         self.state.persephone_dispatcher.persephone_queues[queue].enqueue(request, set_original=True)
+        self.thread.current_task = persephone_dispatcher_task(self.thread, self.config, self.state)
 
 
 class persephone_dispatcher_task(Task):
     def __init__(self, thread, config, state ):
-        super().__init__(1,
-                         state.timer.get_time(), config, state)
+        super().__init__(1, state.timer.get_time(), config, state)
         self.thread = thread
         logging.info('{} | Thread {} starting persephone dispatcher'.format(self.state.timer.get_time(), self.thread.id))
-
-    def process(self, time_increment=1):
-        """Only spent overhead time if new request is wait
-           this simulate classifier overhead"""
-        super().process(time_increment=time_increment)
 
     def on_complete(self):
         """Dispatch requests to worker cores, similar algorithm 1 on paper"""
@@ -537,8 +533,7 @@ class persephone_dispatcher_task(Task):
             # search reserved cores
             if i == 0:
                  for worker_core in self.state.threads:
-                    if worker_core.persephone_classifier or \
-                        worker_core.persephone_dispatcher: continue
+                    if worker_core.is_persephone_dispatcher: continue
 
                     # check if worker reserverd and free
                     if worker_core.persephone_reserved and not \
@@ -550,8 +545,7 @@ class persephone_dispatcher_task(Task):
             # search all cores less reserveds
             if worker == None:
                 for worker_core in self.state.threads:
-                    if worker_core.persephone_classifier or \
-                        worker_core.persephone_dispatcher or \
+                    if worker_core.is_persephone_dispatcher or \
                         worker_core.persephone_reserved:
                         continue
 
@@ -644,8 +638,7 @@ class QueueCheckTask(Task):
     """Task to check the local queue of a thread."""
 
     def __init__(self, thread, config, state, return_to_ws_task=None):
-        #super().__init__(config.LOCAL_QUEUE_CHECK_TIME, state.timer.get_time(), config, state)
-        super().__init__(1, state.timer.get_time(), config, state)
+        super().__init__(config.LOCAL_QUEUE_CHECK_TIME, state.timer.get_time(), config, state)
         self.thread = thread
 
         self.is_productive = False

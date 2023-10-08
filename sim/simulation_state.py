@@ -53,8 +53,7 @@ class SimulationState:
 
         self.attempted_flag_steals = 0
 
-        # persephone core with specific function
-        self.persephone_classifier = None
+        # persephone core dispather
         self.persephone_dispatcher = None
 
         self.active_watchdog = False
@@ -384,19 +383,18 @@ class SimulationState:
         #if config.cfcfs_enable:
         #    self.threads[0].is_dispatcher = True
 
-        # static persephone reserved cores and dispatcher core
         if config.persephone_enable:
+            # thread 0 is persephone dispatcher
             self.persephone_dispatcher = self.threads[0]
-            self.threads[0].persephone_dispatcher = True
+            self.threads[0].is_persephone_dispatcher = True
+
+            # set two queues, one to short other to long requests
             self.threads[0].persephone_queues.append(Queue(100, config, self))
             self.threads[0].persephone_queues[0].set_thread(0)
             self.threads[0].persephone_queues.append(Queue(200, config, self))
             self.threads[0].persephone_queues[1].set_thread(0)
 
-            self.persephone_classifier = self.threads[1]
-            self.persephone_classifier.persephone_classifier = True
-
-
+            # set reserved cores to short request
             for i in range(2, config.persephone_total_reserved_cores + 1):
                 self.threads[i].persephone_reserved = True
 
