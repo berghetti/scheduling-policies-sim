@@ -11,15 +11,60 @@ TASK_FILE_NAME = "task_times.csv"
 META_FILE_NAME = "meta.json"
 STATS_FILE_NAME = "stats.json"
 QUEUES_FILE_NAME = "queues.json"
-CSV_HEADER = "Run ID,Cores,Sim Duration,PERSEPHONE_OVERHEAD,Average Task Duration,Load,CPU Load,Task Load,Work Steal Load," \
-             "95% Tail Latency,99.9% Tail Latency,Median Latency,99% Tail Latency,Slowdown 99%,Slowdown99.9%,latency_short 99.9%,latency_long 99.9%," \
-             "50% latency_short, 50% latency_long,"\
-             "Tasks Stolen,Average Number of Steals,Throughput, orphan_count, orphan time 99.9%" \
-             "Real Load, Parks Per Second,Successful Work Steal Time,Unsuccessful Work Steal Time,Non Work Conserving Time,Allocation Time," \
-             "Task Time,Distracted Time,Unpaired Time,Paired Time,Average Requeue Wait Time,Flag Task Time,Avg Time From Alloc to Task," \
-             "Avg Steals Per Task,Flag Response Rate,Flag Rate,Tasks Flag Stolen,Average Steals Per Flag,Avg Core Flag Wait Time," \
-             "Avg Task Flag Wait Time,Avg Queueing Time,Avg High Latency Task Flag Wait Time,Avg Flag Set Delay Time,Avg High Latency Flag Set Delay Time," \
-             "Avg Flagged Task Service Time,Avg Flagged Task Time Left,Pct Flagged Queues Non-empty,Description, 99% Idle Interval"
+CSV_HEADER = \
+"Run ID",\
+"Cores",\
+"Sim Duration",\
+"PERSEPHONE_OVERHEAD",\
+"Average Task Duration",\
+"Load",\
+"CPU Load",\
+"Task Load",\
+"Work Steal Load",\
+"95% Tail Latency",\
+"99.9% Tail Latency",\
+"Median Latency",\
+"99% Tail Latency",\
+"Slowdown 99%",\
+"Slowdown99.9%",\
+"latency_short 99.9%",\
+"latency_long 99.9%",\
+"50% latency_short",\
+"50% latency_long",\
+"Tasks Stolen",\
+"Average Number of Steals",\
+"Throughput",\
+"orphan_count",\
+"orphan time 99.9%",\
+"Real Load",\
+"Parks Per Second",\
+"Successful Work Steal Time",\
+"Unsuccessful Work Steal Time",\
+"Non Work Conserving Time",\
+"Allocation Time",\
+"Task Time",\
+"Distracted Time",\
+"Unpaired Time",\
+"Paired Time",\
+"Average Requeue Wait Time",\
+"Flag Task Time",\
+"Avg Time From Alloc to Task",\
+"Avg Steals Per Task",\
+"Flag Response Rate",\
+"Flag Rate",\
+"Tasks Flag Stolen",\
+"Average Steals Per Flag",\
+"Avg Core Flag Wait Time",\
+"Avg Task Flag Wait Time",\
+"Avg Queueing Time",\
+"Avg High Latency Task Flag Wait Time",\
+"Avg Flag Set Delay Time",\
+"Avg High Latency Flag Set Delay Time",\
+"Avg Flagged Task Service Time",\
+"Avg Flagged Task Time Left",\
+"Pct Flagged Queues Non-empty",\
+"Description",\
+"99% Idle Interval"
 
 LONG_REQUEST_SERVICE_TIME = 100000
 
@@ -254,7 +299,8 @@ def analyze_sim_run(run_name, output_file, print_results=False, time_dropped=0):
         avg_flagged_service_time,
         avg_flagged_time_left,
         pct_flagged_queues_empty * 100,
-        "\"{}\"".format(meta_data["description"]), idle_interval)
+        "\"{}\"".format(meta_data["description"]),
+        idle_interval)
 
     output_file.write(data_string + "\n")
 
@@ -271,7 +317,7 @@ def main():
 
     output_file_name = sys.argv[-2]
     output_file = open(output_file_name, "w")
-    output_file.write(CSV_HEADER + "\n")
+    output_file.write("{}\n".format(CSV_HEADER))
 
     sim_list = []
     name = sys.argv[1].strip()
