@@ -53,16 +53,15 @@ class SimulationState:
 
         self.attempted_flag_steals = 0
 
+        self.config = config
+
         # persephone core dispather
         self.persephone_dispatcher = None
 
-        self.active_watchdog = False
-        self.virtual_queue = None
+        # afp related
+        self.afp_timer = None
+        self.wait_queue = None
 
-        self.q_orphan_index = 0
-        self.orphan_times = []
-
-        self.config = config
 
     def any_queue_past_delay_threshold(self):
         """Returns true if any queue has a queueing delay longer than the reallocation interval."""
@@ -193,6 +192,7 @@ class SimulationState:
 
     def any_incomplete(self):
         """Return true if there are any incomplete tasks for the entire simulation."""
+        #print('{} {}'.format(self.complete_task_count, self.tasks_scheduled))
         return self.complete_task_count < self.tasks_scheduled
 
     def record_ws_check(self, local_id, remote, check_count, successful=False):
@@ -353,35 +353,18 @@ class SimulationState:
         if config.join_bounded_shortest_queue:
             self.main_queue = Queue(-1, config, self)
 
-        if config.new_policy2_enable:
-            self.virtual_queue = Queue(-1, config, self)
         # Initialize threads
-
-        # new_policy
-        # tot_threads > tot_queues
-        if config.new_policy_enable:
-            for i in range(config.num_threads):
-                if i < (len(set(config.mapping))):
-                    queue = self.queues[config.mapping[i]]
-                    self.threads.append(Thread(queue, i, config, self))
-                    queue.set_thread(i)
-                else:
-                    #queue.set_thread(i)
-                    #self.threads.append(Thread(-1, i, config, self))
-                    vq = self.virtual_queue
-                    self.threads.append(Thread(vq, i, config, self))
-                    vq.set_thread(i)
-                    #self.active_watchdog = True
-
-        else:
-            for i in range(config.num_threads):
-                queue = self.queues[config.mapping[i]]
-                self.threads.append(Thread(queue, i, config, self))
-                queue.set_thread(i)
+        for i in range(config.num_threads):
+            queue = self.queues[config.mapping[i]]
+            self.threads.append(Thread(queue, i, config, self))
+            queue.set_thread(i)
 
 
-        #if config.cfcfs_enable:
-        #    self.threads[0].is_dispatcher = True
+        if config.afp_enable:
+            self.afp_timer = self.threads[0]
+            self.threads[0].is_afp_timer = True
+            self.wait_queue = Queue(-1, config, self)
+            self.available_queues.remove(self.afp_timer.id) # remove queue from 'rss'
 
         if config.persephone_enable:
             # thread 0 is persephone dispatcher
@@ -444,4 +427,4 @@ class SimulationState:
                 progress.print_progress(next_task_time, config.sim_duration, decimals=3, length=50)
             i += 1
 
-        #print("total:{}\n  short:{}\n  longs:{}\n".format(total_requests, total_requests_short, total_requests_long))
+        print("total:{}\n  short:{}\n  longs:{}\n".format(total_requests, total_requests_short, total_requests_long))

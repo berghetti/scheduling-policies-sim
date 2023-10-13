@@ -16,9 +16,9 @@ class SimConfig:
                  enqueue_by_st_sum=False, always_check_realloc=False, ideal_flag_steal=False, delay_range_by_service_time=False,
                  ideal_reallocation=False, fred_reallocation=False, spin_parking_enabled=False, utilization_range_enabled=False,
                  allow_naive_idle=False, work_steal_park_enabled=False, bimodal_service_time=False, join_bounded_shortest_queue=False,
-                 record_queue_lens=False, new_policy_enable=False, persephone_enable=False, persephone_total_reserved_cores=None, new_policy2_enable=False,
+                 record_queue_lens=False, new_policy_enable=False, persephone_enable=False, persephone_total_reserved_cores=None,
                  rps=1000000,
-                 preemption_enable=False, quantum_preemption=None, policy2_quantum_to_check_vqueue=None):
+                 afp_enable=False):
         # Basic configuration
         self.name = name
         self.description = ""
@@ -66,15 +66,10 @@ class SimConfig:
         self.join_bounded_shortest_queue = join_bounded_shortest_queue
         self.record_queue_lens = record_queue_lens
 
-        #new_policy configs
-        self.new_policy_enable = new_policy_enable
-        self.OVERHEAD_SEARCH_ORPHAN_QUEUE = 5000
 
-        self.new_policy2_enable = new_policy2_enable
-        self.policy2_quantum_to_check_vqueue = policy2_quantum_to_check_vqueue
-
-        self.preemption_enable = preemption_enable
-        self.quantum_preemption = quantum_preemption
+        # AFP
+        self.afp_enable = afp_enable
+        self.PREEMPTION_QUANTUM = 5000
         self.PREEMPTION_OVERHEAD = 1000
 
         # persephone
@@ -212,16 +207,12 @@ class SimConfig:
         total_policys_active = self.work_stealing_enabled
         total_policys_active += self.enqueue_choice
         total_policys_active += self.delay_flagging_enabled
-        total_policys_active += self.new_policy_enable
+        total_policys_active += self.afp_enable
         total_policys_active += self.persephone_enable
 
         #new policy validate
         if total_policys_active > 1:
             print("Only one policy can be active once")
-            return False
-
-        if self.new_policy_enable and not (self.num_threads > self.num_queues):
-            print("New_police need more thread than queues")
             return False
 
         #persephone

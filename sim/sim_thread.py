@@ -5,7 +5,7 @@ import random
 import logging
 import numpy as np
 from work_search_state import WorkSearchState
-from tasks import WorkSearchSpin, WorkStealTask, Task, EnqueuePenaltyTask, RequeueTask, ReallocationTask, FlagStealTask, QueueCheckTask, OracleWorkStealTask, IdleTask, new_policy_watchdog_core_task, Overhead_preepmtion_task, persephone_task, dispatcher_task
+from tasks import WorkSearchSpin, WorkStealTask, Task, EnqueuePenaltyTask, RequeueTask, ReallocationTask, FlagStealTask, QueueCheckTask, OracleWorkStealTask, IdleTask, preemption_handler_task, persephone_task, dispatcher_task, afp_timer_task
 
 
 class Thread:
@@ -66,13 +66,20 @@ class Thread:
         self.last_time_idle = 0
         self.idles = []
 
+        self.config = config
+        self.state = state
+
         # persephone related
         self.is_persephone_dispatcher = False # one core is the dispatcher
         self.persephone_queues = [] # multqueues from dispatcher
         self.persephone_reserved = False # core reserved to short requests
 
-        self.config = config
-        self.state = state
+        # afp related
+        self.is_afp_timer = False # AFP core timer
+        self.timer_status = 0 # 0 disable, 1 enable
+        self.timer_preempt = 0 # time left to preempt
+        self.thread_preempted = False
+
 
     def set_fat_queue(self, queue):
         self.fat_queue = queue
@@ -85,7 +92,7 @@ class Thread:
         """Return true if the thread has any task."""
         if search_spin_idle:
             return self.current_task is not None and type(self.current_task) != WorkSearchSpin
-        return self.current_task is not None and not self.current_task.preempted
+        return self.current_task is not None and not self.thread_preempted
         #return self.current_task is not None
 
     def is_productive(self):
@@ -195,6 +202,28 @@ class Thread:
         # Set flags if needed
         self.set_flags()
 
+    # preempt timer methods to AFP policy
+    def timer_enable(self):
+        self.timer_status = 1
+        self.timer_preempt = self.config.PREEMPTION_QUANTUM
+        logging.info('{} | {} enable timer {}'.format(self.state.timer.get_time(), self, self.timer_preempt))
+
+    def timer_disable(self):
+        self.timer_status = 0
+        logging.info('{} | {} disable timer'.format(self.state.timer.get_time(), self))
+
+    def timer_is_enable(self):
+        return self.timer_status == 1 and self.timer_preempt > 0
+
+    def timer_expired(self):
+        #logging.info('{} | {} timer expired {}'.format(self.state.timer.get_time(), self, self.timer_preempt))
+        return self.timer_status == 1 and self.timer_preempt == 0
+
+    def timer_advance(self, decrement=1):
+        if self.timer_status == 1 and self.timer_preempt >= decrement:
+            self.timer_preempt -= decrement
+            #logging.info('{} | {} advance timer {}'.format(self.state.timer.get_time(), self, self.timer_preempt))
+
     def process_task(self, time_increment=1):
         """Process the current task for the given amount of time."""
         initial_task = self.current_task
@@ -203,8 +232,20 @@ class Thread:
         # Process the task as specified by its type
         self.current_task.process(time_increment=time_increment)
 
+        # advance quantum preempt time
+        if self.config.afp_enable and type(self.current_task) == Task:
+            self.timer_advance(time_increment)
+
+        #if self.current_task.complete:
+        #    logging.info('{} | Thread {} complete'.format(self.state.timer.get_time(), self))
+
+
         # If completed, empty current task
         if self.current_task.complete:
+
+            if self.config.afp_enable and type(self.current_task) == Task:
+                self.timer_disable()
+
             if self.current_task.is_productive:
                 self.last_complete = self.state.timer.get_time()
 
@@ -217,8 +258,8 @@ class Thread:
                 self.work_search_state.park()
 
         # If the task just completed took no time, schedule again
-        if initial_task.is_zero_duration():
-            self.schedule(time_increment=time_increment)
+        #if initial_task.is_zero_duration():
+        #    self.schedule(time_increment=time_increment)
 
         # Otherwise, account for the time spent
         else:
@@ -271,6 +312,10 @@ class Thread:
             self.current_task = persephone_task(self, self.config, self.state)
             self.process_task()
 
+        elif self.config.afp_enable and self.is_afp_timer:
+            self.current_task = afp_timer_task(self, self.config, self.state)
+            self.process_task()
+
         # If thread is allocating, start allocation task
         elif self.work_search_state == WorkSearchState.ALLOCATING:
             self.current_task = ReallocationTask(self, self.config, self.state)
@@ -284,9 +329,9 @@ class Thread:
                 if self.work_steal_flag is not None:
                     self.current_task = FlagStealTask(self, self.config, self.state)
 
-            if self.current_task != None and self.current_task.preempted:
-                "spin thread until the overhead time"
-                self.current_task = Overhead_preepmtion_task(self, self.config, self.state)
+            if self.current_task != None and self.thread_preempted:
+                self.preempted_task = self.current_task
+                self.current_task = preemption_handler_task(self, self.config, self.state)
 
             if self.current_task is None:
                 self.current_task = QueueCheckTask(self, self.config, self.state)
@@ -311,6 +356,7 @@ class Thread:
 
         # Check own queue one last time before parking
         elif self.work_search_state == WorkSearchState.LOCAL_QUEUE_FINAL_CHECK:
+            print('here')
             if self.config.delay_flagging_enabled:
                 self.delay_flagging()
                 if self.work_steal_flag is not None:

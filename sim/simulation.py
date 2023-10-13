@@ -34,12 +34,11 @@ class Simulation:
     def run(self):
         """Run the simulation."""
 
-        if self.config.new_policy2_enable:
-            print('New policy2\nP.O: {}\t P.Q: {}\t RPS: {}\tQ.VQ: {}'.format(
+        if self.config.afp_enable:
+            print('AFP\nP.O: {}\t P.Q: {}\t RPS: {}'.format(
                 self.config.PREEMPTION_OVERHEAD,
-                self.config.quantum_preemption,
-                self.config.rps,
-                self.config.policy2_quantum_to_check_vqueue))
+                self.config.PREEMPTION_QUANTUM,
+                self.config.rps))
 
         if self.config.persephone_enable:
             print('Persephone\n Overhead: {}\tReserved_cores: {}'.format(
@@ -78,7 +77,6 @@ class Simulation:
                                                                      immediate_reschedule=reschedule_required)
 
                 logging.debug("\n(jump: {}, rr: {})".format(time_jump, reschedule_required))
-
             # Put new task arrivals in queues
             while task_number < self.state.tasks_scheduled and \
                     self.state.tasks[task_number].arrival_time <= self.state.timer.get_time():
@@ -103,6 +101,8 @@ class Simulation:
 
                 elif self.config.cfcfs_enable:
                     self.state.threads[0].queue.enqueue(self.state.tasks[task_number], set_original=False)
+
+                #elif self.config.
 
                 elif self.config.persephone_enable:
                     self.state.persephone_dispatcher.queue.enqueue(self.state.tasks[task_number])
@@ -402,8 +402,8 @@ class Simulation:
         # Set the time jump
         jump = next_event - self.state.timer.get_time()
 
-        if jump == 0: # this can happen with 0-duration tasks - TODO: look into this more
-            jump = 1
+        #if jump == 0: # this can happen with 0-duration tasks - TODO: look into this more
+        #    jump = 1
 
         # If immediate reschedule required, jump is 1
         # Another immediate reschedule is necessary if the time jump would have been 1 regardless
@@ -475,9 +475,6 @@ class Simulation:
             task_file.write(','.join(task.get_stats()) + "\n")
         task_file.close()
 
-        for orphan_time in self.state.orphan_times:
-            queues_file.write('{}\n'.format(orphan_time))
-        queues_file.close()
 
         #print(self.config.__dict__)
         # Save the configuration

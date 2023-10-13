@@ -20,7 +20,7 @@
  13,
  14
 ],
- "load_thread_count": 16,
+ "load_thread_count": 15,
  "num_tasks": null,
  "sim_duration": 100000000,
  "locking_enabled": false,

@@ -342,6 +342,7 @@ def main():
         print("File or directory not found")
 
     for sim_name in sim_list:
+        #print(sys.argv)
         analyze_sim_run(sim_name.strip(), output_file, time_dropped=int(sys.argv[-1])/100)
         print("Simulation {} analysis complete".format(sim_name))
 
