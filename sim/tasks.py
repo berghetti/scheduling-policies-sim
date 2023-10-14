@@ -564,12 +564,27 @@ class preemption_handler_task(Task):
 
 class afp_timer_task(Task):
     def __init__(self, thread, config, state):
-        super().__init__(0, state.timer.get_time(), config, state)
+        super().__init__(1000, state.timer.get_time(), config, state)
         self.thread = thread
         self.state = state
 
-    def process(self, time_increment=1):
-            super().process(time_increment=time_increment)
+    #def expected_completion_time(self):
+    #    mini = None
+    #    for thread in self.state.threads:
+    #        if type(thread.current_task) != Task: continue
+    #        if not thread.timer_is_enable(): continue
+
+    #        if mini == None or mini > thread.timer_preempt:
+    #            mini = thread.timer_preempt
+
+    #    #print(mini)
+    #    if mini == None:
+    #        mini = 500000 # not timer enabled, wait a time
+    #    return self.state.timer.get_time() + mini
+
+
+    #def process(self, time_increment=1):
+    #    super().process(time_increment=time_increment)
 
     def on_complete(self):
         #logging.info('{} | {} checking timer'.format(self.state.timer.get_time(), self.thread))
