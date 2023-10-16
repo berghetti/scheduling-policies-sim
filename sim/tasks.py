@@ -459,22 +459,45 @@ class dispatcher_task(Task):
                 core.queue.enqueue(self.thread.queue.dequeue(), set_original=True)
                 break
 
-class persephone_dispatcher_task(Task):
+# classifier one task
+class persephone_classifier(Task):
     def __init__(self, thread, config, state ):
-        super().__init__(0, state.timer.get_time(), config, state)
+        logging.info('{} | Thread {} starting persephone classifier task'.format(state.timer.get_time(), thread.id))
+        super().__init__(config.PERSEPHONE_OVERHEAD, state.timer.get_time(), config, state)
         self.thread = thread
-        logging.info('{} | Thread {} starting persephone dispatcher'.format(self.state.timer.get_time(), self.thread.id))
 
     def on_complete(self):
-        """Dispatch requests to worker cores, similar algorithm 1 on paper"""
-        logging.info('{} | Thread {} dispatcher ended'.format(self.state.timer.get_time(), self.thread.id))
+        queue = None # queue 0 is short request queue 1 is long request in persephone dispatcher
+        request = self.thread.queue.dequeue()
 
+        if request.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
+            queue = 1
+        else:
+            queue = 0
+
+        logging.info('{} | Thread {} send request {} to dispatcher on queue {}'
+                     .format(self.state.timer.get_time(), self.thread.id, request, self.state.persephone_dispatcher.persephone_queues[queue]))
+        self.state.persephone_dispatcher.persephone_queues[queue].enqueue(request, set_original=True)
+
+class persephone_task(Task):
+    def __init__(self, thread, config, state ):
+        logging.info('{} | Thread {} starting persephone task'.format(state.timer.get_time(), thread.id))
+        super().__init__(0, state.timer.get_time(), config, state)
+        self.thread = thread
+        self.config = config
+        self.state = state
+        self.start_work_search_spin = False
+
+        if not self.thread.queue.work_available():
+            self.start_work_search_spin = True
+
+    def dispatcher(self):
+        logging.info('{} | Thread {} start dispathing tasks'.format(self.state.timer.get_time(), self.thread.id))
         # queue[0] is short request, than always checked first
         for i, queue in enumerate(self.thread.persephone_queues):
-            if not queue.work_available(): continue
+            if queue.length() == 0: continue
 
             worker = None
-
             # search reserved cores
             if i == 0:
                  for worker_core in self.state.threads:
@@ -505,39 +528,20 @@ class persephone_dispatcher_task(Task):
                 logging.info('{} | Thread {} dispatching {} to worker {}'
                              .format(self.state.timer.get_time(),
                                      self.thread.id, request,
-                                     worker.id))
+                                         worker.id))
 
-class persephone_task(Task):
-    def __init__(self, thread, config, state ):
-        super().__init__(config.PERSEPHONE_OVERHEAD, state.timer.get_time(), config, state)
-        self.thread = thread
-        self.config = config
-        self.state = state
-        logging.info('{} | Thread {} starting persephone classifier task'.format(self.state.timer.get_time(), self.thread.id))
-
-    # classifier overhead only spent time if request is awaiting
-    def process(self, time_increment=1):
-        if self.thread.queue.work_available():
-            """ Spent PERSEPHONE_OVERHEAD becore classifier request """
-            super().process(time_increment=time_increment)
-            logging.info('{} | Thread {} spent classifier overhead time left {}'.format(self.state.timer.get_time(), self.thread.id, self.time_left))
-        #else:
-        #    """ Not spent task time """
-            #logging.info('{} | Thread {} not work available skipping'.format(self.state.timer.get_time(), self.thread.id))
 
     def on_complete(self):
+        #first try dispatching any pending task, this tasks have already been classified
+        self.dispatcher()
 
-        request = self.thread.queue.dequeue()
-        queue = None # queue 0 is short request queue 1 is long request in persephone dispatcher
-        if request.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
-            queue = 1
-        else:
-            queue = 0
+        # if not work in queue, start spin to wait tasks and not spent overhead
+        if self.start_work_search_spin:
+            self.thread.current_task = WorkSearchSpin(self.thread, self.config, self.state)
+            return
 
-        logging.info('{} | Thread {} send request {} to dispatcher on queue {}'
-                     .format(self.state.timer.get_time(), self.thread.id, request, self.state.persephone_dispatcher.persephone_queues[queue]))
-        self.state.persephone_dispatcher.persephone_queues[queue].enqueue(request, set_original=True)
-        self.thread.current_task = persephone_dispatcher_task(self.thread, self.config, self.state)
+        # classify one request by time, overhead is here
+        self.thread.current_task = persephone_classifier(self.thread, self.config, self.state)
 
 
 class preemption_handler_task(Task):

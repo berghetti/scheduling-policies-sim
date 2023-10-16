@@ -1,8 +1,8 @@
 {
  "avg_system_load": 1,
- "rps": 10000,
- "num_queues": 9,
- "num_threads": 9,
+ "rps": 1000000,
+ "num_queues": 15,
+ "num_threads": 15,
  "mapping": [
  0,
  1,
@@ -12,7 +12,13 @@
  5,
  6,
  7,
- 8
+ 8,
+ 9,
+10,
+11,
+12,
+13,
+14
 ],
  "load_thread_count": 3,
  "num_tasks": null,
@@ -53,11 +59,11 @@
 
  "persephone_enable": true,
  "persephone_total_reserved_cores": 1,
- "PERSEPHONE_OVERHEAD": 100,
+ "PERSEPHONE_OVERHEAD": 0,
 
  "SHORT_REQUEST_SERVICE_TIME": 1000,
  "LONG_REQUEST_SERVICE_TIME": 100000,
- "SHORT_REQUEST_RATE" : 99,
+ "SHORT_REQUEST_RATE" : 90,
 
  "AVERAGE_SERVICE_TIME": 1000,
  "WORK_STEAL_CHECK_TIME": 100,
