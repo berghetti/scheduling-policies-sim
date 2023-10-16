@@ -459,42 +459,9 @@ class dispatcher_task(Task):
                 core.queue.enqueue(self.thread.queue.dequeue(), set_original=True)
                 break
 
-
-class persephone_task(Task):
-    def __init__(self, thread, config, state ):
-        super().__init__(config.PERSEPHONE_OVERHEAD, state.timer.get_time(), config, state)
-        self.thread = thread
-        self.config = config
-        self.state = state
-        logging.info('{} | Thread {} starting persephone classifier task'.format(self.state.timer.get_time(), self.thread.id))
-
-    # classifier overhead only spent time if request is awaiting
-    def process(self, time_increment=1):
-        if self.thread.queue.work_available():
-            """ Spent PERSEPHONE_OVERHEAD becore classifier request """
-            super().process(time_increment=time_increment)
-            logging.info('{} | Thread {} spent classifier overhead time left {}'.format(self.state.timer.get_time(), self.thread.id, self.time_left))
-        #else:
-        #    """ Not spent task time """
-            #logging.info('{} | Thread {} not work available skipping'.format(self.state.timer.get_time(), self.thread.id))
-
-    def on_complete(self):
-        request = self.thread.queue.dequeue()
-        queue = None # queue 0 is short request queue 1 is long request in persephone dispatcher
-        if request.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
-            queue = 1
-        else:
-            queue = 0
-
-        logging.info('{} | Thread {} send request {} to dispatcher on queue {}'
-                     .format(self.state.timer.get_time(), self.thread.id, request, self.state.persephone_dispatcher.persephone_queues[queue]))
-        self.state.persephone_dispatcher.persephone_queues[queue].enqueue(request, set_original=True)
-        self.thread.current_task = persephone_dispatcher_task(self.thread, self.config, self.state)
-
-
 class persephone_dispatcher_task(Task):
     def __init__(self, thread, config, state ):
-        super().__init__(1, state.timer.get_time(), config, state)
+        super().__init__(0, state.timer.get_time(), config, state)
         self.thread = thread
         logging.info('{} | Thread {} starting persephone dispatcher'.format(self.state.timer.get_time(), self.thread.id))
 
@@ -514,8 +481,8 @@ class persephone_dispatcher_task(Task):
                     if worker_core.is_persephone_dispatcher: continue
 
                     # check if worker reserverd and free
-                    if worker_core.persephone_reserved and not \
-                            worker_core.is_productive() and \
+                    if worker_core.persephone_reserved and \
+                            not worker_core.is_productive() and \
                             worker_core.queue.length() == 0:
                         worker = worker_core
                         break
@@ -539,6 +506,39 @@ class persephone_dispatcher_task(Task):
                              .format(self.state.timer.get_time(),
                                      self.thread.id, request,
                                      worker.id))
+
+class persephone_task(Task):
+    def __init__(self, thread, config, state ):
+        super().__init__(config.PERSEPHONE_OVERHEAD, state.timer.get_time(), config, state)
+        self.thread = thread
+        self.config = config
+        self.state = state
+        logging.info('{} | Thread {} starting persephone classifier task'.format(self.state.timer.get_time(), self.thread.id))
+
+    # classifier overhead only spent time if request is awaiting
+    def process(self, time_increment=1):
+        if self.thread.queue.work_available():
+            """ Spent PERSEPHONE_OVERHEAD becore classifier request """
+            super().process(time_increment=time_increment)
+            logging.info('{} | Thread {} spent classifier overhead time left {}'.format(self.state.timer.get_time(), self.thread.id, self.time_left))
+        #else:
+        #    """ Not spent task time """
+            #logging.info('{} | Thread {} not work available skipping'.format(self.state.timer.get_time(), self.thread.id))
+
+    def on_complete(self):
+
+        request = self.thread.queue.dequeue()
+        queue = None # queue 0 is short request queue 1 is long request in persephone dispatcher
+        if request.service_time >= self.config.LONG_REQUEST_SERVICE_TIME:
+            queue = 1
+        else:
+            queue = 0
+
+        logging.info('{} | Thread {} send request {} to dispatcher on queue {}'
+                     .format(self.state.timer.get_time(), self.thread.id, request, self.state.persephone_dispatcher.persephone_queues[queue]))
+        self.state.persephone_dispatcher.persephone_queues[queue].enqueue(request, set_original=True)
+        self.thread.current_task = persephone_dispatcher_task(self.thread, self.config, self.state)
+
 
 class preemption_handler_task(Task):
     def __init__(self, thread, config, state):

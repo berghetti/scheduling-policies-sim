@@ -1,14 +1,18 @@
 {
  "avg_system_load": 1,
  "rps": 100,
- "num_queues": 5,
- "num_threads": 5,
+ "num_queues": 9,
+ "num_threads": 9,
  "mapping": [
  0,
  1,
  2,
  3,
- 4
+ 4,
+ 5,
+ 6,
+ 7,
+ 8
 ],
  "load_thread_count": 3,
  "num_tasks": null,

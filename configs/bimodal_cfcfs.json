@@ -1,8 +1,8 @@
 {
  "avg_system_load": 1,
- "rps": 20000000,
- "num_queues": 16,
- "num_threads": 16,
+ "rps": 100,
+ "num_queues": 9,
+ "num_threads": 9,
  "mapping": [
  0,
  1,
@@ -12,16 +12,9 @@
  5,
  6,
  7,
- 8,
- 9,
- 10,
- 11,
- 12,
- 13,
- 14,
- 15
+ 8
 ],
- "load_thread_count": 16,
+ "load_thread_count": 3,
  "num_tasks": null,
  "sim_duration": 100000000,
  "locking_enabled": false,
@@ -58,19 +51,13 @@
  "join_bounded_shortest_queue": true,
  "record_queue_lens": false,
 
- "new_policy_enable": false,
-
- "new_policy2_enable": false,
- "policy2_quantum_to_check_vqueue": 15000,
-
- "preemption_enable": false,
- "quantum_preemption": 10000,
- "PREEMPTION_OVERHEAD" : 3000,
-
- "OVERHEAD_SEARCH_ORPHAN_QUEUE": 300,
+ "afp_enable": false,
+ "PREEMPTION_QUANTUM": 5000,
+ "PREEMPTION_OVERHEAD" : 2000,
 
  "SHORT_REQUEST_SERVICE_TIME": 1000,
  "LONG_REQUEST_SERVICE_TIME": 100000,
+ "SHORT_REQUEST_RATE" : 99,
 
  "AVERAGE_SERVICE_TIME": 1000,
  "WORK_STEAL_CHECK_TIME": 100,

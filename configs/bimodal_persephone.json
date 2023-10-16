@@ -1,14 +1,18 @@
 {
  "avg_system_load": 1,
  "rps": 10000,
- "num_queues": 5,
- "num_threads": 5,
+ "num_queues": 9,
+ "num_threads": 9,
  "mapping": [
  0,
  1,
  2,
  3,
- 4
+ 4,
+ 5,
+ 6,
+ 7,
+ 8
 ],
  "load_thread_count": 3,
  "num_tasks": null,
@@ -49,7 +53,7 @@
 
  "persephone_enable": true,
  "persephone_total_reserved_cores": 1,
- "PERSEPHONE_OVERHEAD": 130,
+ "PERSEPHONE_OVERHEAD": 100,
 
  "SHORT_REQUEST_SERVICE_TIME": 1000,
  "LONG_REQUEST_SERVICE_TIME": 100000,
@@ -59,7 +63,7 @@
  "WORK_STEAL_CHECK_TIME": 100,
  "WORK_STEAL_TIME": 100,
  "MINIMUM_WORK_SEARCH_TIME": 3100,
- "LOCAL_QUEUE_CHECK_TIME": 50,
+ "LOCAL_QUEUE_CHECK_TIME": 0,
  "CORE_REALLOCATION_TIMER": 5000,
  "IDLE_PARK_TIME": 0,
  "LOCAL_QUEUE_CHECK_TIMER": 1000,
