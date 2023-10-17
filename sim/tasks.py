@@ -555,9 +555,12 @@ class preemption_handler_task(Task):
         thread.timer_disable()
         self.thread.preempted_task.preempt_count += 1
 
+    # only spent time
     def process(self, time_increment=1):
         super().process(time_increment=time_increment)
 
+    # on finished task enqueue preempted long request in wait queue to
+    # permit others workers get this task
     def on_complete(self):
         logging.info('{} | Thread {} termineted preemption handler'.format(self.state.timer.get_time(), self.thread))
         self.state.wait_queue.enqueue(self.thread.preempted_task)
@@ -572,17 +575,24 @@ class afp_timer_task(Task):
         self.thread = thread
         self.state = state
 
-    def process(self, time_increment=1):
-        super().process(time_increment=time_increment)
-
-    def on_complete(self):
+    def check_workers(self):
         #logging.info('{} | {} checking timer'.format(self.state.timer.get_time(), self.thread))
         for thread in self.state.threads:
             if thread.is_afp_timer: continue
             if type(thread.current_task) == Task and thread.timer_expired():
                 logging.info('{} | {} timer core interrupt {}'.format(self.state.timer.get_time(), self.thread, thread))
                 thread.thread_preempted = True
+                # timer disabled by worker on preempt task
                 #thread.timer_disable()
+
+    def process(self, time_increment=1):
+        # on each event, check workers timer and mark as preempted
+        self.check_workers();
+        super().process(time_increment=time_increment)
+
+    # not make anything, need to not increment 'Tasks' count finished in Task super class
+    def on_complete(self):
+        pass
 
     def descriptor(self):
         return "AFP timer Task (arrival {}, thread {})".format(
