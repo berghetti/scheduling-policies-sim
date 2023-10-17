@@ -572,23 +572,8 @@ class afp_timer_task(Task):
         self.thread = thread
         self.state = state
 
-    #def expected_completion_time(self):
-    #    mini = None
-    #    for thread in self.state.threads:
-    #        if type(thread.current_task) != Task: continue
-    #        if not thread.timer_is_enable(): continue
-
-    #        if mini == None or mini > thread.timer_preempt:
-    #            mini = thread.timer_preempt
-
-    #    #print(mini)
-    #    if mini == None:
-    #        mini = 500000 # not timer enabled, wait a time
-    #    return self.state.timer.get_time() + mini
-
-
-    #def process(self, time_increment=1):
-    #    super().process(time_increment=time_increment)
+    def process(self, time_increment=1):
+        super().process(time_increment=time_increment)
 
     def on_complete(self):
         #logging.info('{} | {} checking timer'.format(self.state.timer.get_time(), self.thread))

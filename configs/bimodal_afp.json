@@ -1,8 +1,8 @@
 {
  "avg_system_load": 1,
  "rps": 100,
- "num_queues": 9,
- "num_threads": 9,
+ "num_queues": 15,
+ "num_threads": 15,
  "mapping": [
  0,
  1,
@@ -12,7 +12,13 @@
  5,
  6,
  7,
- 8
+ 8,
+ 9,
+ 10,
+ 11,
+ 12,
+ 13,
+ 14
 ],
  "load_thread_count": 3,
  "num_tasks": null,
@@ -53,17 +59,17 @@
 
  "afp_enable": true,
  "PREEMPTION_QUANTUM": 5000,
- "PREEMPTION_OVERHEAD" : 2000,
+ "PREEMPTION_OVERHEAD" : 0,
 
  "SHORT_REQUEST_SERVICE_TIME": 1000,
- "LONG_REQUEST_SERVICE_TIME": 100000,
- "SHORT_REQUEST_RATE" : 99,
+ "LONG_REQUEST_SERVICE_TIME": 500000,
+ "SHORT_REQUEST_RATE" : 999,
 
  "AVERAGE_SERVICE_TIME": 1000,
  "WORK_STEAL_CHECK_TIME": 100,
  "WORK_STEAL_TIME": 100,
  "MINIMUM_WORK_SEARCH_TIME": 3100,
- "LOCAL_QUEUE_CHECK_TIME": 50,
+ "LOCAL_QUEUE_CHECK_TIME": 0,
  "CORE_REALLOCATION_TIMER": 5000,
  "IDLE_PARK_TIME": 0,
  "LOCAL_QUEUE_CHECK_TIMER": 1000,

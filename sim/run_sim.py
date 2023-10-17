@@ -42,7 +42,8 @@ class sim_multiple:
 if __name__ == "__main__":
     time = datetime.now().strftime("%y-%m-%d_%H:%M:%S")
 
-    loads = list(range(100, 2000, 200))# + list(range(2000, 8000, 500))
+    loads = list(range(100, 3000, 200))# + list(range(2000, 8000, 500))
+    #loads = list(range(1000, 10000, 1000))
     if len(sys.argv) == 4:
         rps = int(sys.argv[3])
         loads = [rps] * 10

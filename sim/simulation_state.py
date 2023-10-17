@@ -397,7 +397,6 @@ class SimulationState:
         # Set tasks and arrival times
         #request_rate = config.avg_system_load * config.load_thread_count / config.AVERAGE_SERVICE_TIME
         request_rate = config.avg_system_load * config.rps / 10 ** 9
-        print(request_rate)
         next_task_time = int(1/request_rate) if config.regular_arrivals else int(random.expovariate(request_rate))
         i = 0
         while (config.sim_duration is None or next_task_time < config.sim_duration) and \
@@ -408,7 +407,7 @@ class SimulationState:
                 if config.constant_service_time:
                     service_time = config.AVERAGE_SERVICE_TIME
                 elif config.bimodal_service_time:
-                    if random.randint(0, 99) < config.SHORT_REQUEST_RATE:
+                    if random.randint(0, 999) < config.SHORT_REQUEST_RATE:
                         total_requests_short += 1
                         service_time = config.SHORT_REQUEST_SERVICE_TIME
                     else:
