@@ -1,0 +1,8 @@
+results/*
+config_records/*
+*csv
+*tags*
+*lock*
+*.pyc
+*.pdf
+*.png
