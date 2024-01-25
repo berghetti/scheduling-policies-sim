@@ -137,7 +137,7 @@ set_worker_cores()
     FIELD="\"mapping\""
     #sed -i "s/${FIELD}:.*/${FIELD}: ${MAPS},/g" $2
 }
-RUNS=10 # runs same test in multiple threads
+RUNS=1 # runs same test in multiple threads
 
 exec_test()
 {
@@ -181,16 +181,19 @@ run_afp_1_100()
       for load in {0.1,0.2,0.3,0.4}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "afp_580ov_q1" $CONF $load &
+        PID=$1
         sleep 3
       done
 
-      wait
+      wait $PID
 
       for load in {0.5,0.6,0.7,0.8}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "afp_580ov_q1" $CONF $load &
+        PID=$1
         sleep 3
       done
+      wait $PID
   done
 }
 
@@ -206,16 +209,19 @@ run_rss_1_100()
       for load in {0.1,0.2,0.3,0.4}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "rss" $CONF $load &
+        PID=$1
         sleep 3
       done
 
-      wait
+      wait $PID
 
       for load in {0.5,0.6,0.7,0.8}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "rss" $CONF $load &
+        PID=$1
         sleep 3
       done
+      wait $PID
   done
 }
 
@@ -234,15 +240,18 @@ run_psp_1_100()
       for load in {0.1,0.2,0.3,0.4}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "psp_250" $CONF $load &
+        PID=$1
       done
 
-      wait
+      wait $PID
 
       for load in {0.5,0.6,0.7,0.8}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "psp_250" $CONF $load &
+        PID=$1
         sleep 3
       done
+      wait $PID
   done
 }
 
