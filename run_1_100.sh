@@ -137,7 +137,7 @@ set_worker_cores()
     FIELD="\"mapping\""
     #sed -i "s/${FIELD}:.*/${FIELD}: ${MAPS},/g" $2
 }
-RUNS=1 # runs same test in multiple threads
+RUNS=10 # runs same test in multiple threads
 
 exec_test()
 {
