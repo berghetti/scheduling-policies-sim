@@ -175,7 +175,6 @@ run_afp_1_100()
   set_preempt_overhead 580
   set_afp_rr false
   set_afp_startvation_limit 1000
-  set_worker_cores 14 $CONF
 
   for dist in 'exp' 'lognorm' 'pareto'; do
       set_arrival_dist $dist $CONF
@@ -229,7 +228,6 @@ run_psp_1_100()
 
   set_psp_reserved 1 $CONF
   set_psp_overhead 250 $CONF
-  set_worker_cores 14 $CONF
 
   for dist in 'exp' 'lognorm' 'pareto'; do
       set_arrival_dist $dist $CONF
