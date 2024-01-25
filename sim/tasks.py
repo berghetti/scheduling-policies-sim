@@ -659,9 +659,6 @@ class QueueCheckTask(Task):
 
         elif self.config.afp_enable:
             request = None
-            if self.config.afp_starvation_counter:
-                print(self.config.afp_starvation_counter)
-
             if self.config.afp_starvation_counter < self.config.AFP_STARVATION_COUNTER_THRESHOLD and self.thread.queue.work_available():
                 self.config.afp_starvation_counter += 1
                 request = self.thread.queue.dequeue()
