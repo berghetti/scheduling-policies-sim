@@ -213,7 +213,7 @@ run_rss_1_100()
         sleep 3
       done
 
-      wait $PID
+      #wait $PID
 
       for load in {0.5,0.6,0.7,0.8}; do
         set_avg_system_load $load $CONF
@@ -221,7 +221,7 @@ run_rss_1_100()
         PID=$!
         sleep 3
       done
-      wait $PID
+      #wait $PID
 
       for load in 0.9; do
         set_avg_system_load $load $CONF
@@ -267,6 +267,6 @@ run_psp_1_100()
 }
 
 #run_afp_1_100
-#run_rss_1_100
-run_psp_1_100
+run_rss_1_100
+#run_psp_1_100
 

@@ -26,6 +26,7 @@ class chart:
 
 
     if not multrows:
+      #self.fig, self.ax = plt.subplots(figsize=(9.0, 4.2), dpi=300) # fig 1
       self.fig, self.ax = plt.subplots(figsize=(9.0, 6.0), dpi=300)
       self.config['datasets'] = self.config.pop('datasets')
     else:
@@ -132,11 +133,12 @@ class multrows_line(chart):
     super().__init__(config, multrows=True)
 
   def mult_datasets(self, v):
-    print('here')
     for i, arrival_dist in enumerate(v):
       datasets = v[arrival_dist]
       for dataset in datasets:
-        self.ax[i].set_title(str(arrival_dist).capitalize(), x=0.5, y=0.5, color='gray')
+        #text = self.ax[i].set_title(str(arrival_dist).capitalize(), x=0.5, y=0.5, color='gray')
+        text = self.ax[i].set_title(str(arrival_dist).capitalize(), x=0.01, y=0.75, color='gray', loc='left')
+        text.set_alpha(0.9)
         self.ax[i].plot(dataset['x'],
                          dataset['y'],
                          **dataset['style'])
@@ -199,6 +201,7 @@ class multrows_line(chart):
 class bar(chart):
   def __init__(self, config):
     super().__init__(config)
+    self.bar_width = 0.35
 
   def bar_w(self, v):
     self.bar_width = v['bar_width']

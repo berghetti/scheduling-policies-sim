@@ -16,9 +16,9 @@ import numpy as np
 import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
 
-TYPE = 'short'
+#TYPE = 'short'
 #TYPE = 'long'
-#TYPE = 'all'
+TYPE = 'all'
 
 get_slowdown = False
 
@@ -97,7 +97,7 @@ def process_folder(folder_tests):
 
     for folder in folders:
         #tr = int(folder) / 1000000 #RPS
-        tr = float(folder) * 100 #RPS
+        tr = float(folder) * 100 # Load
 
         folder = os.path.join(folder_tests, folder)
 
@@ -113,32 +113,13 @@ def process_folder(folder_tests):
 
     return x, y, yerr
 
-colors = ['red', 'green', 'darkviolet']
+colors = ['red', 'green', 'blue']
 markers = [ 'o', 's', 'P' ]
 linestyles = ['-', ':', '--', '-.' ]
-#markers = ['*', 'P', 's', 'p' ]
-#labels = ['Exp', 'Lognorm', 'Pareto']
 
-#afp_colors = ['blue', 'deepskyblue', 'darkviolet' ]
-#psp_colors = ['red', 'orange', 'goldenrod']
-
-#afp_line = mlines.Line2D([], [], color='blue', linestyle='-', label='AFP')
-#psp_line = mlines.Line2D([], [], color='orange', linestyle='-', label='PSP')
-#
-#legend_paches = [afp_line, psp_line]
-#
-#for i in range(len(colors)):
-#  legend_paches.append(
-#    mlines.Line2D([], [], color=colors[i], marker=markers[i], linestyle='None',
-#                          markersize=3.0, label=labels[i])
-#  )
-
-
-i = j = k = l = 0
-workload = dist = None
+workload = ''
 def new_dataset(policy):
-  global i, j, k, l
-  global dist, workload
+  global workload
 
   policy = policy.rstrip('/')
   print('Policy: {}'.format(policy))
@@ -146,45 +127,23 @@ def new_dataset(policy):
   x, y, yerr = process_folder(policy)
 
   if 'psp' in policy:
-    #c = psp_colors[ i % len(colors) ]
     c = 'orange'
     m = 'o'
-    #ls = linestyles[ i % len(linestyles) ]
     ls = '-'
-    i += 1
-  elif 'afp-rr' in policy:
+  elif 'rss' in policy:
     c = 'red'
     m = '2'
     ls = ':'
-    #ls = linestyles[ l % len(linestyles) ]
-    l += 1
   else:
-    #c = afp_colors[ j % len(colors) ]
-    #ls = linestyles[ j % len(linestyles) ]
     ls = '--'
     m = 's'
     c = 'blue'
-    j += 1
-
-
-  #policy = str(policy)
 
   policy_name = str(policy.split('/')[-1].split('_')[0]).upper()
   dist = str(policy.split('/')[2]).capitalize()
   workload = str(policy.split('/')[3]).capitalize()
-  #dist = ''
 
   print(policy_name, dist)
-
-  #if last_dist == None:
-  #  last_dist = dist
-  #elif last_dist != dist:
-  #  k += 1
-  #  last_dist = dist
-
-  #mc = colors[ k % len(colors) ]
-  #m = markers[ k % len(markers) ]
-  #k += 1
 
   return {
     'x': x,

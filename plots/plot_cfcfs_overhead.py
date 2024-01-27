@@ -141,11 +141,11 @@ if __name__ == '__main__':
       #'ylabel': 'Latency 99.9% (us)',
 
       'font': {
-          'font.size':15,
-          'axes.labelsize': 15,
-          'axes.titlesize': 15,
-          'xtick.labelsize': 15,
-          'ytick.labelsize': 15,
+          'font.size':20,
+          'axes.labelsize': 20,
+          'axes.titlesize': 20,
+          'xtick.labelsize': 20,
+          'ytick.labelsize': 20,
       },
 
       'grid': {
@@ -178,28 +178,11 @@ if __name__ == '__main__':
       #    'loc': 'center'
       #},
 
-      #'ylim': [-1, 16],
-      'xlim': [-10, 1010],  # max(overhead) + 10],
-      #'save': 'imgs/{}.pdf'.format(TYPE),
+      'ylim': [0, 14],
+      'xlim': [0, 950],  # max(overhead) + 10],
       'save': 'imgs/cfcfs_overhead.pdf',
-      #'save': 'imgs/{}.png'.format(TYPE),
-      #'show': 'y'
+      'show': 'n'
   }
-
-  #if TYPE == 'long' or TYPE == 'all':
-  #    #config['title']['label'] = '{} requests'.format(TYPE).capitalize()
-  #    config['title']['label'] = 'Longas'
-
-  #    if TYPE == 'all':
-  #      config['title']['label'] = 'Geral'
-
-
-      #config['set_ticks']['ymajor'] = 500
-      #config['set_ticks']['yminor'] = 250
-      #config['ylim'] = [0, 3500]
-      #config['ylim'] = [0, 500]
-      #config['set_ticks']['ymajor'] = 50
-      #config['set_ticks']['yminor'] = 25
 
 
   c = charts.line(config)

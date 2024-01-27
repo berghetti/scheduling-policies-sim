@@ -16,13 +16,13 @@ import numpy as np
 import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
 
-#TYPE = 'short'
-TYPE = 'long'
+TYPE = 'short'
+#TYPE = 'long'
 #TYPE = 'all'
 
 get_slowdown = False
 
-SV_TIME_SHORT = 500
+SV_TIME_SHORT = 1000
 
 def interval_confidence( data ):
     Z = 1.96 # nivel de confiança 95%
@@ -71,7 +71,7 @@ def get_latency(folder):
         if len(latencys) == 0:
             print('error get latencys')
             exit(1)
-
+        task_times.close()
 
         sld.append( np.percentile(slowdowns, 99.9) )
         lat.append( np.percentile(latencys, 99.9) )
@@ -122,7 +122,10 @@ def new_dataset(policy):
   policy = policy.rstrip('/')
   print('Policy: {}'.format(policy))
 
-  x, y, yerr = process_folder(policy)
+  policy_name = str(policy.split('/')[-1].split('_')[0]).upper()
+  dist = str(policy.split('/')[2]).capitalize()
+  workload = str(policy.split('/')[3]).capitalize()
+
 
   if 'psp' in policy:
     c = 'orange'
@@ -131,16 +134,16 @@ def new_dataset(policy):
   elif 'rss' in policy:
     c = 'red'
     m = '2'
-    ls = ':'
+    ls = '-.'
+    if TYPE == 'short':
+        policy_name = ''
   else:
     ls = '--'
     m = 's'
     c = 'blue'
 
 
-  policy_name = str(policy.split('/')[-1].split('_')[0]).upper()
-  dist = str(policy.split('/')[2]).capitalize()
-  workload = str(policy.split('/')[3]).capitalize()
+  x, y, yerr = process_folder(policy)
 
   print(policy_name, dist)
 
@@ -154,7 +157,7 @@ def new_dataset(policy):
         'linestyle': ls,
         'marker': m,
         'linewidth': 1.0,
-        'markersize': 5.0,
+        'markersize': 4,
         #'markerfacecolor': mc,
         #'markeredgecolor': mc
     },
@@ -162,21 +165,21 @@ def new_dataset(policy):
         'x': x,
         'y': y,
         'yerr': yerr,
-        #'ecolor': 'black',
+        'ecolor': 'black',
         'color': c,
         'linestyle': ls,
         'marker': m,
-        'elinewidth': 0.3,
+        'elinewidth': 1,
+        #'barsabove': True,
         'linewidth': 1.0,
-        'markersize': 5.0,
+        'markersize': 4,
+        'capsize': 3, # upper and bottom in error bar
         #'markerfacecolor': mc,
         #'markeredgecolor': mc
     },
   }
 
-
 datasets = []
-
 
 # return dict with each key a array de datasets
 # each key is a arrival dist
@@ -197,8 +200,6 @@ def multdatasets_create(policys):
 
     #print(d)
     return d
-
-
 
 if __name__ == '__main__':
 
@@ -232,17 +233,15 @@ if __name__ == '__main__':
   config = {
       #'datasets': datasets,
       'mult_datasets': rows,
-      #'xlabel': 'Throughput (MRPS)',
       'xlabel': 'Utilização (%)',
-      #'ylabel': 'Latency 99.9% (us)',
       'ylabel': 'Latência de Cauda ($\mu$s)',
 
       'font': {
-          'font.size':23,
-          'axes.labelsize': 23,
-          'axes.titlesize': 23,
-          'xtick.labelsize': 23,
-          'ytick.labelsize': 23,
+          'font.size':20,
+          'axes.labelsize': 20,
+          'axes.titlesize': 20,
+          'xtick.labelsize': 20,
+          'ytick.labelsize': 20,
       },
 
       'grid': {
@@ -263,15 +262,19 @@ if __name__ == '__main__':
       },
 
       'legend': {
-          #'loc': 'lower center',
+          'loc': 'upper center',
+          'bbox_to_anchor': (0.5, 1.3),
+          #'loc': 'lower left',
+          #'bbox_to_anchor': (0.2, 0.9, 1.0, 0.2), #outside plot
           #'bbox_to_anchor': (0, 1.02, 1.0, 0.2), #outside plot
           #'bbox_to_anchor': (0.25, 1.),
           #'loc': 'upper left',
           #'title': 'Overhead (ns)',
-          'loc': 'best',
+          #'loc': 'lower left',
+          #'bbox_to_anchor': (0, 0.65, 1, 0.2),
           'title_fontsize' : 12,
           'fontsize': 15,
-          'ncol': 1,
+          'ncol': 2,
           #'mode': 'expand',
           #'handles': legend_paches
           'frameon': False,
@@ -291,7 +294,7 @@ if __name__ == '__main__':
       #},
 
       'ylim': [0, 60],
-      'xlim': [0, 82],  # max(overhead) + 10],
+      'xlim': [0, 89.9],  # max(overhead) + 10],
       #'save': 'imgs/{}.pdf'.format(TYPE),
       'save': 'imgs/all_{}_{}.pdf'.format(workload, TYPE),
       #'save': 'imgs/test.pdf'.format(workload, TYPE),
@@ -300,9 +303,10 @@ if __name__ == '__main__':
   }
 
   if TYPE == 'long' or TYPE == 'all':
-      config['set_ticks']['ymajor'] = 500
-      config['set_ticks']['yminor'] = 250
-      config['ylim'] = [0, 2000]
+      config['set_ticks']['ymajor'] = 150
+      config['set_ticks']['yminor'] = 50
+      config['ylim'] = [0, 600]
+      config['legend']['ncol'] = 3
 
   if get_slowdown:
       config['save'] = 'imgs/slowdown_{}_{}.pdf'.format(workload, TYPE)

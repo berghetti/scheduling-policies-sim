@@ -17,8 +17,8 @@ import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
 
 #TYPE = 'short'
-TYPE = 'long'
-#TYPE = 'all'
+#TYPE = 'long'
+TYPE = 'all'
 
 get_slowdown = False
 
@@ -38,6 +38,7 @@ def interval_confidence( data ):
     avg = round(avg, 4)
     margin_error = round(margin_error, 4)
     return avg, margin_error
+
 
 def get_latency(folder):
 
@@ -81,8 +82,8 @@ def get_latency(folder):
 
     return interval_confidence(lat)
 
-def load_in_file_name(f):
-    return float(f.split('_')[-1])
+def rps_in_file_name(f):
+    return int(f.split('_')[-1])
 
 def process_folder(folder_tests):
     x = []
@@ -91,11 +92,11 @@ def process_folder(folder_tests):
 
 
     folders = os.listdir(folder_tests)
-    folders = sorted(folders, key=load_in_file_name)
+    folders = sorted(folders, key=rps_in_file_name)
 
     for folder in folders:
-        #tr = int(folder) / 1000000 #RPS
-        tr = float(folder) * 100 # Load
+        tr = int(folder) / 1000000 #RPS
+        #tr = float(folder) * 100 # Load
 
         folder = os.path.join(folder_tests, folder)
 
@@ -111,38 +112,29 @@ def process_folder(folder_tests):
 
     return x, y, yerr
 
-colors = ['red', 'green', 'darkviolet']
-markers = [ 'o', 's', 'P' ]
-linestyles = ['-', ':', '--', '-.' ]
+colors = ['green', 'blue', 'orange', 'purple', 'red']
+markers = [ 'o', 'v', '^', '<', '>' ]
+linestyles = ['-', ':', '--', '-.', (0, (1,10)) ]
 
-workload = dist = None
+workload = ''
+i = 0
 def new_dataset(policy):
-  global dist, workload
+  global workload, i
 
   policy = policy.rstrip('/')
   print('Policy: {}'.format(policy))
 
-  x, y, yerr = process_folder(policy)
+  c = colors[ i % len(colors)]
+  m = markers[ i % len(markers)]
+  ls = linestyles[i % len(linestyles)]
+  i += 1
 
-  if 'psp' in policy:
-    c = 'orange'
-    m = 'o'
-    ls = '-'
-  elif 'rss' in policy:
-    c = 'red'
-    m = '2'
-    ls = ':'
-  else:
-    ls = '--'
-    m = 's'
-    c = 'blue'
-
-
-  policy_name = str(policy.split('/')[-1].split('_')[0]).upper()
+  policy_name = str(policy.split('/')[-1].split('_')[-1]).upper()
   dist = str(policy.split('/')[2]).capitalize()
   workload = str(policy.split('/')[3]).capitalize()
 
   print(policy_name, dist)
+  x, y, yerr = process_folder(policy)
 
   return {
     'x': x,
@@ -162,11 +154,12 @@ def new_dataset(policy):
         'x': x,
         'y': y,
         'yerr': yerr,
-        #'ecolor': 'black',
+        'ecolor': 'black',
         'color': c,
         'linestyle': ls,
         'marker': m,
-        'elinewidth': 0.3,
+        'barsabove': True,
+        'elinewidth': 0.5,
         'linewidth': 1.0,
         'markersize': 5.0,
         #'markerfacecolor': mc,
@@ -202,7 +195,7 @@ def multdatasets_create(policys):
 
 if __name__ == '__main__':
 
-  locale.setlocale(locale.LC_NUMERIC, "pt_BR.utf8")
+  locale.setlocale(locale.LC_NUMERIC, "pt_BR.utf8")#
 
   if "-long" in sys.argv:
       sys.argv.remove("-long")
@@ -221,28 +214,28 @@ if __name__ == '__main__':
       get_slowdown = True
       TYPE = "all"
 
-  rows = multdatasets_create(sys.argv[1:])
-  print('total datasets {}'.format(len(rows)))
+  #rows = multdatasets_create(sys.argv[1:])
+  #print('total datasets {}'.format(len(rows)))
 
 
-  #for policy in sys.argv[1:]:
-  #   datasets.append(new_dataset(policy))
+  for policy in sys.argv[1:]:
+     datasets.append(new_dataset(policy))
 
   # edit manually this general settings
   config = {
-      #'datasets': datasets,
-      'mult_datasets': rows,
-      #'xlabel': 'Throughput (MRPS)',
-      'xlabel': 'Utilização (%)',
+      'datasets': datasets,
+      #'mult_datasets': rows,
+      'xlabel': 'Vazão (MRPS)',
+      #'xlabel': 'Utilização (%)',
       #'ylabel': 'Latency 99.9% (us)',
       'ylabel': 'Latência de Cauda ($\mu$s)',
 
       'font': {
-          'font.size':23,
-          'axes.labelsize': 23,
-          'axes.titlesize': 23,
-          'xtick.labelsize': 23,
-          'ytick.labelsize': 23,
+          'font.size':20,
+          'axes.labelsize': 20,
+          'axes.titlesize': 20,
+          'xtick.labelsize': 20,
+          'ytick.labelsize': 20,
       },
 
       'grid': {
@@ -256,10 +249,10 @@ if __name__ == '__main__':
       },
 
       'set_ticks': {
-          'xmajor': 10,
-          'xminor': 0,
-          'ymajor': 15,
-          'yminor': 5,
+          'xmajor': 2,
+          'xminor': 1,
+          'ymajor': 20,
+          'yminor': 10,
       },
 
       'legend': {
@@ -267,8 +260,8 @@ if __name__ == '__main__':
           #'bbox_to_anchor': (0, 1.02, 1.0, 0.2), #outside plot
           #'bbox_to_anchor': (0.25, 1.),
           #'loc': 'upper left',
-          #'title': 'Overhead (ns)',
           'loc': 'best',
+      #    'title': 'Overhead (ns)',
           'title_fontsize' : 12,
           'fontsize': 15,
           'ncol': 1,
@@ -290,25 +283,10 @@ if __name__ == '__main__':
       #    'loc': 'center'
       #},
 
-      'ylim': [0, 60],
-      'xlim': [0, 82],  # max(overhead) + 10],
-      #'save': 'imgs/{}.pdf'.format(TYPE),
-      'save': 'imgs/all_{}_{}.pdf'.format(workload, TYPE),
-      #'save': 'imgs/test.pdf'.format(workload, TYPE),
-      #'save': 'imgs/{}.png'.format(TYPE),
+      'ylim': [0, 100],
+      'xlim': [0, 13],  # max(overhead) + 10],
+      'save': 'imgs/cfcfs_latency.pdf',
       'show': 'n',
   }
 
-  if TYPE == 'long' or TYPE == 'all':
-      config['set_ticks']['ymajor'] = 500
-      config['set_ticks']['yminor'] = 250
-      config['ylim'] = [0, 2000]
-
-  if get_slowdown:
-      config['save'] = 'imgs/slowdown_{}_{}.pdf'.format(workload, TYPE)
-      config['ylabel'] = 'Slowdown'
-      config['set_ticks']['ymajor'] = 25
-      config['set_ticks']['yminor'] = 0
-      config['ylim'] = [0, 100]
-
-  c = charts.multrows_line(config)
+  c = charts.line(config)

@@ -1,11 +1,5 @@
 #!/bin/python3
 
-# example use
-# ./plot.py afp psp dfcfs
-#
-# to each policy this script access '../tests' folder process results and
-# plot chart
-
 import charts
 import csv
 import sys
@@ -99,12 +93,18 @@ def get_latency(TYPE, folder):
 
     return interval_confidence(lat)
 
+workload = ''
 def new_dataset(policy):
-  global i
+  global i, workload, SV_TIME_SHORT
 
   policy = policy.rstrip('\/')
 
-  quantum = str(policy.split('/')[-2].split('_')[-1])[1:]
+  if 'extreme' in policy:
+      SV_TIME_SHORT = 500
+
+  workload = policy.split('/')[3]
+
+  quantum = str(policy.split('/')[-1].split('_')[-1])[1:]
   print(quantum)
   short_lat, short_err = get_latency('short', policy)
   long_lat, long_err = get_latency('long', policy)
@@ -115,7 +115,7 @@ def new_dataset(policy):
       {
         'y': short_lat,
         'group_config': {
-            'label': 'Curtas (1$\mu$s)',
+            'label': 'Curtas',
             'color': '#CCEBCB',
             'edgecolor': 'black',
             'yerr': short_err,
@@ -125,11 +125,12 @@ def new_dataset(policy):
       {
         'y': long_lat,
         'group_config': {
-            'label': 'Longas (100$\mu$s)',
+            'label': 'Longas',
             'color': 'blue',
             'edgecolor': 'black',
             'yerr': long_err,
-            'alpha': 0.70
+            'alpha': 0.70,
+            'capsize': 3
           }
        },
      ]
@@ -158,11 +159,11 @@ if __name__ == '__main__':
       'ylabel': 'Latência de Cauda ($\mu$s)',
 
       'font': {
-          'font.size':23,
-          'axes.labelsize': 23,
-          'axes.titlesize': 23,
-          'xtick.labelsize': 23,
-          'ytick.labelsize': 23,
+          'font.size':20,
+          'axes.labelsize': 20,
+          'axes.titlesize': 20,
+          'xtick.labelsize': 20,
+          'ytick.labelsize': 20,
       },
 
       'grid': {
@@ -179,8 +180,8 @@ if __name__ == '__main__':
       'set_ticks': {
           'xmajor': False,
           'xminor': False,
-          'ymajor': 20,
-          'yminor': 10,
+          'ymajor': 100,
+          'yminor': 50,
       },
 
 
@@ -192,7 +193,7 @@ if __name__ == '__main__':
            #'bbox_to_anchor': (0, 1.02, 1.0, 0.2),
           'fontsize': 15,
           'ncol': 2,
-          'mode': 'expand',
+          #'mode': 'expand',
           'frameon': False, # remove legend background
       },
 
@@ -209,18 +210,20 @@ if __name__ == '__main__':
       #'bar_xticks': list(range(len(datasets))), # tick idx
       'bar_xticks': [0,1,2,3,4], # tick idx
       'bar_xticklabels': [x['name'] for x in datasets], # tick name
-      'bar_yticks_major': list(range(0, 160, 20)),
-      'bar_yticks_minor': list(range(0, 150, 10)),
+      #'bar_yticks_major': list(range(0, 800, 100)),
+      #'bar_yticks_minor': list(range(0, 800, 50)),
 
-      'ylim': [0, 150],
-      #'xlim': [0, 15],  # max(overhead) + 10],
-      'save': 'imgs/{}.pdf'.format('quantum'),
-      #'save': 'imgs/exp_{}_psp_ov250_l4000_afp_ov850_qt2.pdf'.format(TYPE),
-      #'save': 'imgs/{}.png'.format(TYPE),
+      'ylim': [0, 800],
+      'save': 'imgs/{}_{}.pdf'.format('quantum', workload),
       'show': 'n'
   }
 
-  print(config['bar_xticklabels'])
-  print(config['datasets'])
+  if '1_100' in workload:
+    config['ylim'] = [0,160]
+    config['set_ticks']['ymajor'] = 20
+    config['set_ticks']['yminor'] = 10
+
+  #print(config['bar_xticklabels'])
+  #print(config['datasets'])
 
   c = charts.bar(config)
