@@ -178,22 +178,30 @@ run_afp_1_100()
 
   for dist in 'exp' 'lognorm' 'pareto'; do
       set_arrival_dist $dist $CONF
-      for load in {0.1,0.2,0.3,0.4}; do
+
+      #for load in {0.1,0.2,0.3,0.4}; do
+      #  set_avg_system_load $load $CONF
+      #  exec_test "${dist}/${LOAD_NAME}" "afp_580ov_q1" $CONF $load &
+      #  PID=$!
+      #  sleep 3
+      #done
+
+      #wait $PID
+
+      #for load in {0.5,0.6,0.7,0.8}; do
+      #  set_avg_system_load $load $CONF
+      #  exec_test "${dist}/${LOAD_NAME}" "afp_580ov_q1" $CONF $load &
+      #  PID=$!
+      #  sleep 3
+      #done
+      #wait $PID
+
+      for load in {0.9}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "afp_580ov_q1" $CONF $load &
         PID=$!
         sleep 3
       done
-
-      wait $PID
-
-      for load in {0.5,0.6,0.7,0.8}; do
-        set_avg_system_load $load $CONF
-        exec_test "${dist}/${LOAD_NAME}" "afp_580ov_q1" $CONF $load &
-        PID=$!
-        sleep 3
-      done
-      wait $PID
   done
 }
 
@@ -206,6 +214,7 @@ run_rss_1_100()
 
   for dist in 'exp' 'lognorm' 'pareto'; do
       set_arrival_dist $dist $CONF
+
       for load in {0.1,0.2,0.3,0.4}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "rss" $CONF $load &
@@ -215,21 +224,13 @@ run_rss_1_100()
 
       #wait $PID
 
-      for load in {0.5,0.6,0.7,0.8}; do
+      for load in {0.5,0.6,0.7,0.8,0.9}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "rss" $CONF $load &
         PID=$!
         sleep 3
       done
       #wait $PID
-
-      for load in 0.9; do
-        set_avg_system_load $load $CONF
-        exec_test "${dist}/${LOAD_NAME}" "rss" $CONF $load &
-        PID=$!
-        sleep 3
-      done
-      wait $PID
   done
 }
 
@@ -246,8 +247,8 @@ run_psp_1_100()
 
   for dist in 'exp' 'lognorm' 'pareto'; do
       set_arrival_dist $dist $CONF
-      #for load in {0.1,0.2,0.3,0.4}; do
-      for load in 0.5; do
+      for load in {0.1,0.2,0.3,0.4}; do
+      #for load in 0.5; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "psp_250" $CONF $load &
         PID=$!
@@ -256,7 +257,7 @@ run_psp_1_100()
       wait $PID
 
       #for load in {0.5,0.6,0.7,0.8}; do
-      for load in {0.6,0.7,0.8,0.9}; do
+      for load in {0.5,0.6,0.7,0.8,0.9}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "psp_250" $CONF $load &
         PID=$!
@@ -266,7 +267,7 @@ run_psp_1_100()
   done
 }
 
-#run_afp_1_100
-run_rss_1_100
-#run_psp_1_100
+run_afp_1_100
+#run_rss_1_100
+run_psp_1_100
 
