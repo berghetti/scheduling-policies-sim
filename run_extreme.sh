@@ -201,6 +201,14 @@ run_rss_extreme()
         sleep 3
       done
       wait $PID
+
+      for load in 0.9; do
+        set_avg_system_load $load $CONF
+        exec_test "${dist}/${LOAD_NAME}" "rss" $CONF $load &
+        PID=$!
+        sleep 3
+      done
+      wait $PID
   done
 }
 
@@ -236,7 +244,7 @@ run_psp_extreme()
   done
 }
 
-run_afp_extreme
+#run_afp_extreme
 run_rss_extreme
-run_psp_extreme
+#run_psp_extreme
 

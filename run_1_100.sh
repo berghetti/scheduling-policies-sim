@@ -222,6 +222,14 @@ run_rss_1_100()
         sleep 3
       done
       wait $PID
+
+      for load in 0.9; do
+        set_avg_system_load $load $CONF
+        exec_test "${dist}/${LOAD_NAME}" "rss" $CONF $load &
+        PID=$!
+        sleep 3
+      done
+      wait $PID
   done
 }
 
