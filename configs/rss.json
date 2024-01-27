@@ -1,7 +1,7 @@
 {
  "avg_system_load": 0.9,
- "num_queues": 14,
- "num_threads": 14,
+ "num_queues": 15,
+ "num_threads": 15,
  "mapping": [
  0,
  1,
@@ -16,9 +16,10 @@
  10,
  11,
  12,
- 13
+ 13,
+ 14
 ],
- "worker_cores_count": 14,
+ "worker_cores_count": 15,
  "num_tasks": null,
  "sim_duration": 200000000,
  "locking_enabled": false,
