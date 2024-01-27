@@ -161,7 +161,7 @@ run_afp_extreme()
       for load in {0.1,0.2,0.3,0.4}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "afp_580ov_q1" $CONF $load &
-        PID=$1
+        PID=$!
         sleep 3
       done
       wait $PID
@@ -169,7 +169,7 @@ run_afp_extreme()
       for load in {0.5,0.6,0.7,0.8}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "afp_580ov_q1" $CONF $load &
-        PID=$1
+        PID=$!
         sleep 3
       done
       wait $PID
@@ -189,7 +189,7 @@ run_rss_extreme()
       for load in {0.1,0.2,0.3,0.4}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "rss" $CONF $load &
-        PID=$1
+        PID=$!
         sleep 3
       done
       wait $PID
@@ -197,7 +197,7 @@ run_rss_extreme()
       for load in {0.5,0.6,0.7,0.8}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "rss" $CONF $load &
-        PID=$1
+        PID=$!
         sleep 3
       done
       wait $PID
@@ -211,22 +211,25 @@ run_psp_extreme()
 
   set_extreme_load $CONF
   set_psp_reserved 2 $CONF
-  set_psp_overhead 250 $CONF
+  #set_psp_overhead 250 $CONF
+  set_psp_overhead 100 $CONF
 
   for dist in 'exp' 'lognorm' 'pareto'; do
       set_arrival_dist $dist $CONF
-      for load in {0.1,0.2,0.3,0.4}; do
+      #for load in {0.1,0.2,0.3,0.4}; do
+      for load in 0.5; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "psp_250" $CONF $load &
-        PID=$1
+        PID=$!
       done
 
       wait $PID
 
-      for load in {0.5,0.6,0.7,0.8}; do
+      #for load in {0.5,0.6,0.7,0.8}; do
+      for load in {0.6,0.7,0.8,0.9}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "psp_250" $CONF $load &
-        PID=$1
+        PID=$!
         sleep 3
       done
       wait $PID
