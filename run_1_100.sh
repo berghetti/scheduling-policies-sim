@@ -196,7 +196,7 @@ run_afp_1_100()
       #done
       #wait $PID
 
-      for load in {0.9}; do
+      for load in 0.9; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "afp_580ov_q1" $CONF $load &
         PID=$!
@@ -230,7 +230,7 @@ run_rss_1_100()
         PID=$!
         sleep 3
       done
-      #wait $PID
+      wait $PID
   done
 }
 
@@ -254,7 +254,7 @@ run_psp_1_100()
         PID=$!
       done
 
-      wait $PID
+      #wait $PID
 
       #for load in {0.5,0.6,0.7,0.8}; do
       for load in {0.5,0.6,0.7,0.8,0.9}; do

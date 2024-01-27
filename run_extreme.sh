@@ -175,7 +175,7 @@ run_afp_extreme()
      # done
      # wait $PID
 
-      for load in {0.9}; do
+      for load in 0.9; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "afp_580ov_q1" $CONF $load &
         PID=$!
@@ -202,15 +202,7 @@ run_rss_extreme()
       done
       #wait $PID
 
-      for load in {0.5,0.6,0.7,0.8}; do
-        set_avg_system_load $load $CONF
-        exec_test "${dist}/${LOAD_NAME}" "rss" $CONF $load &
-        PID=$!
-        sleep 3
-      done
-      #wait $PID
-
-      for load in 0.9; do
+      for load in {0.5,0.6,0.7,0.8,0.9}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "rss" $CONF $load &
         PID=$!
