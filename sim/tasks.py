@@ -106,8 +106,10 @@ class Task:
                 self.arrival_time, self.service_time, self.original_queue)
 
     def get_stats(self):
-        stats = [self.arrival_time, self.time_in_system(), self.service_time, self.steal_count, self.original_queue,
-                 self.queued_ahead, self.total_queue, self.queue_checks, self.front_task_time, self.requeue_wait_time()]
+       # stats = [self.arrival_time, self.time_in_system(), self.service_time, self.steal_count, self.original_queue,
+       #          self.queued_ahead, self.total_queue, self.queue_checks, self.front_task_time, self.requeue_wait_time()]
+
+        stats = [self.arrival_time, self.time_in_system(), self.service_time]
 
         if self.config.delay_flagging_enabled:
             stats += [self.flag_steal_count, self.flag_wait_time, self.flag_set_delay, int(self.flagged), self.flagged_time_left]
@@ -117,8 +119,11 @@ class Task:
 
     @staticmethod
     def get_stat_headers(config):
-        headers = ["Arrival Time", "Time in System", "Request Service Time", "Steal Count", "Original Queue",
-                   "Queue Length", "Total Queue Length", "Queue Checks", "Time Left of Task Ahead", "Requeue Wait Time"]
+        #headers = ["Arrival Time", "Time in System", "Request Service Time", "Steal Count", "Original Queue",
+        #           "Queue Length", "Total Queue Length", "Queue Checks", "Time Left of Task Ahead", "Requeue Wait Time"]
+
+        headers = ["Arrival Time", "Time in System", "Request Service Time"]
+
         if config.delay_flagging_enabled:
             headers += ["Flag Steal Count", "Flag Wait Time", "Flag Set Delay", "Flagged", "Flagged Time Left"]
         return headers
