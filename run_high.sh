@@ -281,6 +281,7 @@ run_psp()
 }
 
 run_afp
+wait
 run_rss
 wait
 run_psp
