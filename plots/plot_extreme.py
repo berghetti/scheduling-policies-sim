@@ -209,7 +209,6 @@ def multdatasets_create(policys):
 
 if __name__ == '__main__':
 
-  locale.setlocale(locale.LC_NUMERIC, "pt_BR.utf8")
 
   if "-long" in sys.argv:
       sys.argv.remove("-long")
@@ -298,7 +297,7 @@ if __name__ == '__main__':
       #},
 
       'ylim': [0, 60],
-      'xlim': [0, 89.9],  # max(overhead) + 10],
+      'xlim': [0, 99.9],  # max(overhead) + 10],
       #'save': 'imgs/{}.pdf'.format(TYPE),
       'save': 'imgs/all_{}_{}.pdf'.format(workload, TYPE),
       #'save': 'imgs/test.pdf'.format(workload, TYPE),
