@@ -164,110 +164,87 @@ exec_test()
 
 [ -d tests ] || mkdir tests
 
+LOAD_NAME="1_100"
 
-run_afp_1_100()
+run_afp()
 {
   CONF="./configs/afp.json"
-  LOAD_NAME="1_100"
+
+  OVERHEAD=580
 
   set_1_100_load $CONF
-  set_quantum 1000
-  set_preempt_overhead 580
+  set_preempt_overhead $OVERHEAD
   set_afp_rr false
   set_afp_startvation_limit 1000
 
   for dist in 'exp' 'lognorm' 'pareto'; do
       set_arrival_dist $dist $CONF
 
-      #for load in {0.1,0.2,0.3,0.4}; do
-      #  set_avg_system_load $load $CONF
-      #  exec_test "${dist}/${LOAD_NAME}" "afp_580ov_q1" $CONF $load &
-      #  PID=$!
-      #  sleep 3
-      #done
+      for q in {1000,2000,4000,8000,16000}; do
+        set_quantum $q
 
-      #wait $PID
+        for load in {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9}; do
+          set_avg_system_load $load $CONF
+          exec_test "${dist}/${LOAD_NAME}" "afp_ov${OVERHEAD}_q$((q/1000))" $CONF $load &
+          PID=$!
+          sleep 10
+        done
 
-      #for load in {0.5,0.6,0.7,0.8}; do
-      #  set_avg_system_load $load $CONF
-      #  exec_test "${dist}/${LOAD_NAME}" "afp_580ov_q1" $CONF $load &
-      #  PID=$!
-      #  sleep 3
-      #done
-      #wait $PID
+        wait $PID
 
-      for load in 0.9; do
-        set_avg_system_load $load $CONF
-        exec_test "${dist}/${LOAD_NAME}" "afp_580ov_q1" $CONF $load &
-        PID=$!
-        sleep 3
       done
+
   done
 }
 
-run_rss_1_100()
+run_rss()
 {
   CONF="./configs/rss.json"
-  LOAD_NAME="1_100"
 
   set_1_100_load $CONF
 
   for dist in 'exp' 'lognorm' 'pareto'; do
       set_arrival_dist $dist $CONF
 
-      for load in {0.1,0.2,0.3,0.4}; do
+      for load in {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9}; do
         set_avg_system_load $load $CONF
         exec_test "${dist}/${LOAD_NAME}" "rss" $CONF $load &
         PID=$!
-        sleep 3
-      done
-
-      #wait $PID
-
-      for load in {0.5,0.6,0.7,0.8,0.9}; do
-        set_avg_system_load $load $CONF
-        exec_test "${dist}/${LOAD_NAME}" "rss" $CONF $load &
-        PID=$!
-        sleep 3
+        sleep 10
       done
       wait $PID
+
   done
 }
 
-run_psp_1_100()
+run_psp()
 {
   CONF="./configs/psp.json"
-  LOAD_NAME="1_100"
+  OVERHEAD=100
+  RESERVED=2
 
   set_1_100_load $CONF
-
-  set_psp_reserved 1 $CONF
-  #set_psp_overhead 250 $CONF
-  set_psp_overhead 100 $CONF
+  set_psp_reserved $RESERVED $CONF
 
   for dist in 'exp' 'lognorm' 'pareto'; do
       set_arrival_dist $dist $CONF
-      for load in {0.1,0.2,0.3,0.4}; do
-      #for load in 0.5; do
-        set_avg_system_load $load $CONF
-        exec_test "${dist}/${LOAD_NAME}" "psp_250" $CONF $load &
-        PID=$!
+
+      for ov in {100,150,200}; do
+          set_psp_overhead $ov $CONF
+          for load in {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9}; do
+             set_avg_system_load $load $CONF
+             exec_test "${dist}/${LOAD_NAME}" "psp_ov${ov}_res${RESERVED}" $CONF $load &
+             PID=$!
+             sleep 10
+           done
+
+           wait $PID
       done
 
-      #wait $PID
-
-      #for load in {0.5,0.6,0.7,0.8}; do
-      for load in {0.5,0.6,0.7,0.8,0.9}; do
-        set_avg_system_load $load $CONF
-        exec_test "${dist}/${LOAD_NAME}" "psp_250" $CONF $load &
-        PID=$!
-        sleep 3
-      done
-      wait $PID
   done
 }
 
-run_afp_1_100
-#run_rss_1_100
-run_psp_1_100
+run_afp
+run_rss
+run_psp
 
