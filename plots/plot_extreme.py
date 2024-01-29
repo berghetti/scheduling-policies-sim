@@ -117,7 +117,7 @@ colors = ['red', 'green', 'darkviolet']
 markers = [ 'o', 's', 'P' ]
 linestyles = ['-', ':', '--', '-.' ]
 
-afp_c = ['blue', 'darkblue', 'stateblue', 'indigo', 'violet']
+afp_c = ['blue', 'darkblue', 'slateblue', 'indigo', 'violet']
 psp_c = ['orange', 'gold', 'yellow', 'green']
 
 
