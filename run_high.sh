@@ -243,7 +243,7 @@ run_psp()
   for dist in 'exp' 'lognorm' 'pareto'; do
       set_arrival_dist $dist $CONF
 
-      for ov in {100,150,200}; do
+      for ov in {100,150,200,250}; do
           set_psp_overhead $ov $CONF
           for load in {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9}; do
              set_avg_system_load $load $CONF
