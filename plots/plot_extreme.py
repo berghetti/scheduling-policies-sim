@@ -244,6 +244,8 @@ if __name__ == '__main__':
       get_slowdown = True
       TYPE = "all"
 
+  name = sys.argv[2]
+
   rows = multdatasets_create(sys.argv[1:])
   print('total datasets {}'.format(len(rows)))
 
@@ -295,7 +297,7 @@ if __name__ == '__main__':
           #'bbox_to_anchor': (0, 0.65, 1, 0.2),
           'title_fontsize' : 12,
           'fontsize': 15,
-          'ncol': 2,
+          'ncol': 5,
           #'mode': 'expand',
           'frameon': False,
       },
@@ -316,7 +318,7 @@ if __name__ == '__main__':
       'ylim': [0, 60],
       'xlim': [0, 99.9],  # max(overhead) + 10],
       #'save': 'imgs/{}.pdf'.format(TYPE),
-      'save': 'imgs/all_{}_{}.pdf'.format(workload, TYPE),
+      'save': 'imgs/{}_{}_{}.pdf'.format(workload, TYPE, name),
       #'save': 'imgs/test.pdf'.format(workload, TYPE),
       #'save': 'imgs/{}.png'.format(TYPE),
       'show': 'n',
@@ -326,7 +328,7 @@ if __name__ == '__main__':
       config['set_ticks']['ymajor'] = 500
       config['set_ticks']['yminor'] = 250
       config['ylim'] = [0, 2000]
-      config['legend']['ncol'] = 3
+      config['legend']['ncol'] = 4
       #config['legend']['bbox_to_anchor'] = (0.5, 0.1)
       #config['legend']['loc'] = 'center'
       #config['loc'] = 'lower left'
