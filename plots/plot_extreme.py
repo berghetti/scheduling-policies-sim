@@ -244,8 +244,8 @@ if __name__ == '__main__':
       get_slowdown = True
       TYPE = "all"
 
-  name = sys.argv[2]
-  del(sys.argv[2])
+  name = sys.argv[1]
+  del(sys.argv[1])
 
   rows = multdatasets_create(sys.argv[1:])
   print('total datasets {}'.format(len(rows)))
