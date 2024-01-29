@@ -131,7 +131,7 @@ def new_dataset(policy):
   print('Policy: {}'.format(policy))
 
   #policy_name = str(policy.split('/')[-1].split('_')[0]).upper()
-  policy_name = str(policy.split('/')[-1].split('_'))
+  policy_name = str(policy.split('/')[-1])
   dist = str(policy.split('/')[2]).capitalize()
   workload = str(policy.split('/')[3]).capitalize()
 
