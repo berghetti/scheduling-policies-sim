@@ -245,6 +245,7 @@ if __name__ == '__main__':
       TYPE = "all"
 
   name = sys.argv[2]
+  del(sys.argv[2])
 
   rows = multdatasets_create(sys.argv[1:])
   print('total datasets {}'.format(len(rows)))
