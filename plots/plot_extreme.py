@@ -117,9 +117,15 @@ colors = ['red', 'green', 'darkviolet']
 markers = [ 'o', 's', 'P' ]
 linestyles = ['-', ':', '--', '-.' ]
 
+afp_c = ['blue', 'darkblue', 'stateblue', 'indigo', 'violet']
+psp_c ['orange', 'gold', 'yellow', 'green']
+
+
+afp_i = psp_i = 0
 workload = dist = None
 def new_dataset(policy):
   global dist, workload
+  global afp_i, psp_i
 
   policy = policy.rstrip('/')
   print('Policy: {}'.format(policy))
@@ -133,16 +139,26 @@ def new_dataset(policy):
     c = 'orange'
     m = 'o'
     ls = '-'
+    ov = policy_name.split('_')[1].strip('ov')
+    res = policy_name.split('_')[2].strip('res')
+    policy_name = 'PSP-{}-{}'.format(ov, res)
+    c = psp_c[psp_i % len(psp_c)]
+    psp_i += 1
   elif 'rss' in policy:
     c = 'red'
-    m = '2'
+    m = 'x'
     ls = '-.'
     if TYPE == 'short':
         policy_name = ''
-  else:
+  elif 'afp' in policy:
     ls = '--'
     m = 's'
     c = 'blue'
+    ov = policy_name.split('_')[1].strip('ov')
+    q = policy_name.split('_')[2].strip('q')
+    policy_name = 'AFP-{}-{}'.format(ov, q)
+    c = afp_c[afp_i % len(afp_c)]
+    afp_i += 1
 
 
   x, y, yerr = process_folder(policy)
