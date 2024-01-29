@@ -118,7 +118,7 @@ markers = [ 'o', 's', 'P' ]
 linestyles = ['-', ':', '--', '-.' ]
 
 afp_c = ['blue', 'darkblue', 'stateblue', 'indigo', 'violet']
-psp_c ['orange', 'gold', 'yellow', 'green']
+psp_c = ['orange', 'gold', 'yellow', 'green']
 
 
 afp_i = psp_i = 0
