@@ -194,7 +194,7 @@ run_afp()
           exec_test "${dist}/${LOAD_NAME}" "afp_ov${OVERHEAD}_q$((q/1000))" $CONF $load  &
           sleep 10
 
-          ((counter++))
+          ((counter += $RUNS))
           if [ $counter -ge $MAX_THREADS ]; then
             while [ $conter -ge $MAX_THREADS - $RUNS ]; do
               wait -n # wait lest one process return
@@ -247,7 +247,7 @@ run_psp()
              exec_test "${dist}/${LOAD_NAME}" "psp_ov${ov}_res${RESERVED}" $CONF $load &
              sleep 10
 
-             ((counter++))
+             ((counter += $RUNS))
               if [ $counter -ge $MAX_THREADS ]; then
                 while [ $conter -ge $MAX_THREADS - $RUNS ]; do
                   wait -n # wait lest one process return
