@@ -125,7 +125,8 @@ def new_dataset(policy):
   policy = policy.rstrip('/')
   print('Policy: {}'.format(policy))
 
-  policy_name = str(policy.split('/')[-1].split('_')[0]).upper()
+  #policy_name = str(policy.split('/')[-1].split('_')[0]).upper()
+  policy_name = str(policy.split('/')[-1])
   dist = str(policy.split('/')[2]).capitalize()
   workload = str(policy.split('/')[3]).capitalize()
 
@@ -235,6 +236,8 @@ if __name__ == '__main__':
 
   name = sys.argv[1]
   del(sys.argv[1])
+
+  print(name, sys.argv)
 
   rows = multdatasets_create(sys.argv[1:])
   print('total datasets {}'.format(len(rows)))
