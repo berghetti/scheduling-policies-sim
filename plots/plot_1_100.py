@@ -152,11 +152,22 @@ def new_dataset(policy):
     ls = '--'
     m = 's'
     c = 'blue'
-    ov = policy_name.split('_')[1].strip('ov')
+    #ov = policy_name.split('_')[1].strip('ov')
     q = policy_name.split('_')[2].strip('q')
-    policy_name = 'AFP-{}-{}'.format(ov, q)
-    c = afp_c[afp_i]
-    afp_i = (afp_i + 1) % len(afp_c)
+    match q:
+        case 1:
+            c = 'blue'
+        case 2:
+            c = 'green'
+        case 4:
+            c = 'red'
+        case 8:
+            c = 'black'
+        case 16:
+            c = 'pink'
+    policy_name = 'AFP-{}'.format(q)
+    #c = afp_c[afp_i]
+    #afp_i = (afp_i + 1) % len(afp_c)
 
   x, y, yerr = process_folder(policy)
 
