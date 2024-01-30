@@ -177,7 +177,7 @@ run_afp()
   set_afp_rr false
   set_afp_startvation_limit 1000
 
-  for dist in 'exp' 'lognorm' 'pareto'; do
+  for dist in 'exp' 'lognorm'; do
       set_arrival_dist $dist $CONF
 
       for q in {1000,2000,4000,8000,16000}; do
@@ -185,7 +185,7 @@ run_afp()
 
         for load in {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9}; do
           set_avg_system_load $load $CONF
-          exec_test "${dist}/${LOAD_NAME}" "afp_ov${OVERHEAD}_q$((q/1000))" $CONF $load &
+          exec_test "${dist}/${LOAD_NAME}" "afp_ov${OVERHEAD}_q$((q/1000))" $CONF $load  &
           PID=$!
           sleep 10
         done
@@ -203,7 +203,7 @@ run_rss()
 
   set_1_100_load $CONF
 
-  for dist in 'exp' 'lognorm' 'pareto'; do
+  for dist in 'exp' 'lognorm'; do
       set_arrival_dist $dist $CONF
 
       for load in {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9}; do
@@ -220,16 +220,15 @@ run_rss()
 run_psp()
 {
   CONF="./configs/psp.json"
-  OVERHEAD=100
   RESERVED=2
 
   set_1_100_load $CONF
   set_psp_reserved $RESERVED $CONF
 
-  for dist in 'exp' 'lognorm' 'pareto'; do
+  for dist in 'exp' 'lognorm'; do
       set_arrival_dist $dist $CONF
 
-      for ov in {100,150,200,250}; do
+      for ov in {150,300,450,600}; do
           set_psp_overhead $ov $CONF
           for load in {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9}; do
              set_avg_system_load $load $CONF
@@ -245,6 +244,6 @@ run_psp()
 }
 
 run_afp
-run_rss
+#run_rss
 run_psp
 
