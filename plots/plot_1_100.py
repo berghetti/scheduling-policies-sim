@@ -115,6 +115,9 @@ colors = ['red', 'green', 'darkviolet']
 markers = [ 'o', 's', 'P' ]
 linestyles = ['-', ':', '--', '-.' ]
 
+afp_c = ['blue', 'darkblue', 'slateblue', 'indigo', 'violet']
+psp_c = ['orange', 'gold', 'yellow', 'green']
+
 workload = dist = None
 def new_dataset(policy):
   global dist, workload
@@ -131,17 +134,26 @@ def new_dataset(policy):
     c = 'orange'
     m = 'o'
     ls = '-'
+    ov = policy_name.split('_')[1].strip('ov')
+    res = policy_name.split('_')[2].strip('res')
+    policy_name = 'PSP-{}-{}'.format(ov, res)
+    c = psp_c[psp_i % len(psp_c)]
+    psp_i += 1
   elif 'rss' in policy:
     c = 'red'
-    m = '2'
+    m = 'x'
     ls = '-.'
     if TYPE == 'short':
         policy_name = ''
-  else:
+  elif 'afp' in policy:
     ls = '--'
     m = 's'
     c = 'blue'
-
+    ov = policy_name.split('_')[1].strip('ov')
+    q = policy_name.split('_')[2].strip('q')
+    policy_name = 'AFP-{}-{}'.format(ov, q)
+    c = afp_c[afp_i % len(afp_c)]
+    afp_i += 1
 
   x, y, yerr = process_folder(policy)
 
@@ -221,6 +233,9 @@ if __name__ == '__main__':
       get_slowdown = True
       TYPE = "all"
 
+  name = sys.argv[1]
+  del(sys.argv[1])
+
   rows = multdatasets_create(sys.argv[1:])
   print('total datasets {}'.format(len(rows)))
 
@@ -273,7 +288,7 @@ if __name__ == '__main__':
           #'bbox_to_anchor': (0, 0.65, 1, 0.2),
           'title_fontsize' : 12,
           'fontsize': 15,
-          'ncol': 2,
+          'ncol': 5,
           #'mode': 'expand',
           #'handles': legend_paches
           'frameon': False,
@@ -305,7 +320,7 @@ if __name__ == '__main__':
       config['set_ticks']['ymajor'] = 150
       config['set_ticks']['yminor'] = 50
       config['ylim'] = [0, 600]
-      config['legend']['ncol'] = 3
+      config['legend']['ncol'] = 4
 
   if get_slowdown:
       config['save'] = 'imgs/slowdown_{}_{}.pdf'.format(workload, TYPE)
