@@ -142,9 +142,9 @@ def new_dataset(policy):
     ls = '-'
     ov = policy_name.split('_')[1].strip('ov')
     res = policy_name.split('_')[2].strip('res')
-    policy_name = 'PSP-{}-{}'.format(ov, res)
-    c = psp_c[psp_i % len(psp_c)]
-    psp_i += 1
+    #policy_name = 'PSP-{}-{}'.format(ov, res)
+    #c = psp_c[psp_i % len(psp_c)]
+    #psp_i += 1
   elif 'rss' in policy:
     c = 'red'
     m = 'x'
