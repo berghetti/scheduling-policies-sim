@@ -155,8 +155,8 @@ def new_dataset(policy):
     ov = policy_name.split('_')[1].strip('ov')
     q = policy_name.split('_')[2].strip('q')
     policy_name = 'AFP-{}-{}'.format(ov, q)
-    c = afp_c[afp_i % len(afp_c)]
-    afp_i += 1
+    c = afp_c[afp_i]
+    afp_i = (afp_i + 1) % len(afp_c)
 
   x, y, yerr = process_folder(policy)
 
