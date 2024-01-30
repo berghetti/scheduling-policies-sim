@@ -239,7 +239,6 @@ run_psp()
           for load in {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9}; do
              set_avg_system_load $load $CONF
              exec_test "${dist}/${LOAD_NAME}" "psp_ov${ov}_res${RESERVED}" $CONF $load &
-             ((counter += $RUNS))
              sleep 10
 
              while [ $(ps aux | grep "python3 ./sim/run_sim.py" | wc -l) -ge $(( MAX_THREADS - RUNS )) ]; do
