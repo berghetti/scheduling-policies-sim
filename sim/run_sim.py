@@ -9,6 +9,18 @@ import multiprocessing
 import json
 import pathlib
 
+seeds = [  
+ 3701911707341269515,
+ 15191645628774096634,
+ 2201696237995777714,
+ 2485700183867055204,
+ 16623566231682717526,
+ 7020859580296771130,
+ 16841071825792723804,
+ 17119695190630873215,
+ 15158686182843497587,
+ 5968770105188906074,
+]
 
 class SimProcess(multiprocessing.Process):
     def __init__(self, thread_id, name, configuration, sim_dir_path):
@@ -19,20 +31,6 @@ class SimProcess(multiprocessing.Process):
         self.sim_path = sim_dir_path
 
     def run(self):
-        print("Starting " + self.name)
-        simulation = Simulation(self.config, self.sim_path)
-        simulation.run()
-        simulation.save_stats()
-        print("Exiting " + self.name)
-
-class sim_multiple:
-    def __init__(self, thread_id, name, configuration, sim_dir_path):
-        self.thread_id = thread_id
-        self.name = name
-        self.config = configuration
-        self.sim_path = sim_dir_path
-
-    def start(self):
         print("Starting " + self.name)
         simulation = Simulation(self.config, self.sim_path)
         simulation.run()
@@ -114,13 +112,13 @@ if __name__ == "__main__":
                 cfg.name = name
                 cfg.progress_bar = (i == 0)
                 cfg.description = description
+                cfg.seed = seeds[i % len(seeds)]
 
             else:
                 print("Missing or invalid argument")
                 exit(1)
 
             threads.append(SimProcess(i, name, cfg, path_to_sim))
-            #threads.append(sim_multiple(i, name, cfg, path_to_sim))
 
     threads.reverse()
     for thread in threads:
