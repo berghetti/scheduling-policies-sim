@@ -157,7 +157,7 @@ def new_dataset(policy):
     c = 'blue'
     #ov = policy_name.split('_')[1].strip('ov')
     q = policy_name.split('_')[2].strip('q')
-    match q:
+    match int(q):
         case 1:
             c = 'blue'
         case 2:
