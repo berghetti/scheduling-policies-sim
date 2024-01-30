@@ -313,7 +313,7 @@ if __name__ == '__main__':
       'ylim': [0, 60],
       'xlim': [0, 99.9],  # max(overhead) + 10],
       #'save': 'imgs/{}.pdf'.format(TYPE),
-      'save': 'imgs/all_{}_{}.pdf'.format(workload, TYPE),
+      'save': 'imgs/{}_{}_{}.pdf'.format(workload, TYPE, name),
       #'save': 'imgs/test.pdf'.format(workload, TYPE),
       #'save': 'imgs/{}.png'.format(TYPE),
       'show': 'n',
