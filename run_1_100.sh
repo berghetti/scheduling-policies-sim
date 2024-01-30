@@ -193,9 +193,12 @@ run_afp()
           set_avg_system_load $load $CONF
           exec_test "${dist}/${LOAD_NAME}" "afp_ov${OVERHEAD}_q$((q/1000))" $CONF $load  &
           sleep 10
+
           ((counter++))
-          if [ $counter -eq $MAX_THREADS ]; then
-            wait -n # wait lest one process return
+          if [ $counter -ge $MAX_THREADS ]; then
+            while [ $conter -ge $MAX_THREADS - $RUNS ]; do
+              wait -n # wait lest one process return
+            done
           fi
         done
 
@@ -245,9 +248,11 @@ run_psp()
              sleep 10
 
              ((counter++))
-             if [ $counter -eq $MAX_THREADS ]; then
-               wait -n # wait lest one process return
-             fi
+              if [ $counter -ge $MAX_THREADS ]; then
+                while [ $conter -ge $MAX_THREADS - $RUNS ]; do
+                  wait -n # wait lest one process return
+                done
+              fi
            done
 
       done
