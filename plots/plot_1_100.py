@@ -118,9 +118,11 @@ linestyles = ['-', ':', '--', '-.' ]
 afp_c = ['blue', 'darkblue', 'slateblue', 'indigo', 'violet']
 psp_c = ['orange', 'gold', 'yellow', 'green']
 
+afp_i = psp_i = 0
 workload = dist = None
 def new_dataset(policy):
   global dist, workload
+  global afp_i, psp_i
 
   policy = policy.rstrip('/')
   print('Policy: {}'.format(policy))
