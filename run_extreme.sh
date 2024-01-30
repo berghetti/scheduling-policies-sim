@@ -119,6 +119,9 @@ set_psp_reserved()
 
 RUNS=10 # runs same test in multiple threads
 
+MAX_THREADS=140
+counter=0
+
 exec_test()
 {
     TEST_NAME=$1
@@ -140,6 +143,8 @@ exec_test()
        mv ./results/sim_${RANDOM_TEST_NAME}_t${i}/task_times.csv \
            ./tests/${DIR_TEST}/${i}_tasks.csv;
    done
+   
+   ((counter -= $RUNS))
 }
 
 [ -d tests ] || mkdir tests
@@ -167,11 +172,15 @@ run_afp()
         for load in {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9}; do
           set_avg_system_load $load $CONF
           exec_test "${dist}/${LOAD_NAME}" "afp_ov${OVERHEAD}_q$((q/1000))" $CONF $load &
-          PID=$!
+          ((counter += $RUNS))
           sleep 10
+          
+          if [ $counter -ge $MAX_THREADS ]; then
+            while [ $counter -ge $(( MAX_THREADS - RUNS )) ]; do
+              wait -n # wait lest one process return
+            done
+          fi
         done
-
-        wait $PID
 
       done
 
@@ -214,11 +223,15 @@ run_psp()
           for load in {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9}; do
              set_avg_system_load $load $CONF
              exec_test "${dist}/${LOAD_NAME}" "psp_ov${ov}_res${RESERVED}" $CONF $load &
-             PID=$!
+             ((counter += $RUNS))
              sleep 10
-           done
-
-           wait $PID
+             
+             if [ $counter -ge $MAX_THREADS ]; then
+               while [ $counter -ge $(( MAX_THREADS - RUNS )) ]; do
+                 wait -n # wait lest one process return
+               done
+             fi
+          done
       done
 
   done

@@ -253,7 +253,7 @@ run_psp()
                   wait -n # wait lest one process return
                 done
               fi
-           done
+          done
 
       done
 
