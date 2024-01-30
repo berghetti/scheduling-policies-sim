@@ -196,7 +196,7 @@ run_afp()
           sleep 10
 
           if [ $counter -ge $MAX_THREADS ]; then
-            while [ $conter -ge $MAX_THREADS - $RUNS ]; do
+            while [ $counter -ge $(( MAX_THREADS - RUNS )) ]; do
               wait -n # wait lest one process return
             done
           fi
@@ -249,7 +249,7 @@ run_psp()
              sleep 10
 
               if [ $counter -ge $MAX_THREADS ]; then
-                while [ $conter -ge $MAX_THREADS - $RUNS ]; do
+                while [ $counter -ge $MAX_THREADS - $RUNS ]; do
                   wait -n # wait lest one process return
                 done
               fi
