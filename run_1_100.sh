@@ -194,7 +194,7 @@ run_afp()
           exec_test "${dist}/${LOAD_NAME}" "afp_ov${OVERHEAD}_q$((q/1000))" $CONF $load  &
           sleep 10
           ((counter++))
-          if [$counter -eq $MAX_THREADS]; then
+          if [ $counter -eq $MAX_THREADS ]; then
             wait -n # wait lest one process return
           fi
         done
@@ -245,7 +245,7 @@ run_psp()
              sleep 10
 
              ((counter++))
-             if [$counter -eq $MAX_THREADS]; then
+             if [ $counter -eq $MAX_THREADS ]; then
                wait -n # wait lest one process return
              fi
            done
