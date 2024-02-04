@@ -52,7 +52,6 @@ def get_latency(folder, TYPE=None, SV_TIME_SHORT=None):
     lat = []
     for file in files:
 
-        task_times = open(os.path.join(folder, file))
         with open(os.path.join(folder, file)) as task_times:
             next(task_times) # skip header
 

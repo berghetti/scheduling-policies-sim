@@ -4,13 +4,13 @@ This simulator has been extended from https://github.com/smcclure20/scheduling-p
 
 ## To Run
 
-Run two workloads.
+Start simulation using scripts bellow.
+
 Warning: this creates many threads and can slow down your computer.
 
 ```bash
 ./run_workload1.sh; ./run_workload2.sh
 ```
-You should be in the `/sim/` directory
 
 ## To plot
 
