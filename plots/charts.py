@@ -5,11 +5,6 @@ from matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
 from matplotlib.ticker import FuncFormatter
 
 
-#plt.style.use('seaborn-v0_8-dark-palette')
-#plt.style.use('ggplot')
-
-
-
 def font(v):
   plt.rcParams.update(v)
   plt.rcParams['axes.formatter.use_locale'] = True
@@ -26,12 +21,16 @@ class chart:
 
 
     if not multrows:
-      #self.fig, self.ax = plt.subplots(figsize=(9.0, 4.2), dpi=300) # fig 1
+      #self.fig, self.ax = plt.subplots(figsize=(9.0, 4.1), dpi=300) # fig 1
       self.fig, self.ax = plt.subplots(figsize=(9.0, 6.0), dpi=300)
       self.config['datasets'] = self.config.pop('datasets')
     else:
       len_rows = len(config['mult_datasets'])
       self.fig, self.ax = plt.subplots(len_rows, 1, figsize=(9.0, 6.0), dpi=300, sharex=True, sharey=True)
+      # hack subscriptable ax
+      if len_rows == 1:
+        self.ax = [self.ax]
+
       self.config['mult_datasets'] = self.config.pop('mult_datasets')
 
     #the order matters, leave the dataset second to last and show last
@@ -187,12 +186,6 @@ class multrows_line(chart):
   def ticklabel_format(self, v):
       #for i in range(self.num_rows):
       self.ax[0].ticklabel_format(**v)
-      #self.ax[0].yaxis.offsetText.set_fontsize(15)
-      #self.ax[1].yaxis.offsetText.set_fontsize(15)
-      #self.ax[2].yaxis.offsetText.set_fontsize(15)
-      #self.ax[0].ticklabel_format(useLocale=True, style='sci')
-      #plt.ticklabel_format(useLocale=True, style='sci', axis='y', scilimits=(0,0))
-      #plt.ticklabel_format(**v)
 
   def legend(self, v):
     self.ax[0].legend(**v)

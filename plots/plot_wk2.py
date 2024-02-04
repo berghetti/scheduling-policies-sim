@@ -16,13 +16,13 @@ import numpy as np
 import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
 
-#TYPE = 'short'
+TYPE = 'short'
 #TYPE = 'long'
-TYPE = 'all'
+#TYPE = 'all'
 
 get_slowdown = False
 
-SV_TIME_SHORT = 500
+SV_TIME_SHORT = 1000
 
 def interval_confidence( data ):
     Z = 1.96 # nivel de confiança 95%
@@ -38,7 +38,6 @@ def interval_confidence( data ):
     avg = round(avg, 4)
     margin_error = round(margin_error, 4)
     return avg, margin_error
-
 
 def get_latency(folder):
 
@@ -72,7 +71,7 @@ def get_latency(folder):
         if len(latencys) == 0:
             print('error get latencys')
             exit(1)
-
+        task_times.close()
 
         sld.append( np.percentile(slowdowns, 99.9) )
         lat.append( np.percentile(latencys, 99.9) )
@@ -82,8 +81,8 @@ def get_latency(folder):
 
     return interval_confidence(lat)
 
-def rps_in_file_name(f):
-    return int(f.split('_')[-1])
+def load_in_file_name(f):
+    return float(f.split('_')[-1])
 
 def process_folder(folder_tests):
     x = []
@@ -92,11 +91,11 @@ def process_folder(folder_tests):
 
 
     folders = os.listdir(folder_tests)
-    folders = sorted(folders, key=rps_in_file_name)
+    folders = sorted(folders, key=load_in_file_name)
 
     for folder in folders:
-        tr = int(folder) / 1000000 #RPS
-        #tr = float(folder) * 100 # Load
+        #tr = int(folder) / 1000000 #RPS
+        tr = float(folder) * 100 # Load
 
         folder = os.path.join(folder_tests, folder)
 
@@ -112,41 +111,88 @@ def process_folder(folder_tests):
 
     return x, y, yerr
 
-colors = ['green', 'blue', 'orange', 'purple', 'red']
-markers = [ 'o', 'v', '^', '<', '>' ]
-linestyles = ['-', ':', '--', '-.', (0, (1,10)) ]
+colors = ['red', 'green', 'darkviolet']
+markers = [ 'o', 's', 'P' ]
+linestyles = ['-', ':', '--', '-.' ]
 
-workload = ''
-i = 0
+afp_c = ['blue', 'green', 'pink', 'violet', 'cyan']
+psp_c = ['orange', 'gold', 'yellow', 'green']
+
+afp_i = psp_i = 0
+workload = dist = None
 def new_dataset(policy):
-  global workload, i
+  global dist, workload
+  global afp_i, psp_i
 
   policy = policy.rstrip('/')
   print('Policy: {}'.format(policy))
 
-  c = colors[ i % len(colors)]
-  m = markers[ i % len(markers)]
-  ls = linestyles[i % len(linestyles)]
-  i += 1
-
-  policy_name = str(policy.split('/')[-1].split('_')[-1]).upper()
+  #policy_name = str(policy.split('/')[-1].split('_')[0]).upper()
+  policy_name = str(policy.split('/')[-1])
   dist = str(policy.split('/')[2]).capitalize()
   workload = str(policy.split('/')[3]).capitalize()
 
-  print(policy_name, dist)
+
+  if 'psp' in policy:
+    c = 'orange'
+    m = 'o'
+    ls = '-'
+    ov = policy_name.split('_')[1].strip('ov')
+    print(ov)
+    res = policy_name.split('_')[2].strip('res')
+    match int(ov):
+        case 150:
+            c = 'orange'
+        case 300:
+            c = 'green'
+        case 450:
+            c = 'purple'
+        case 600:
+            c = 'pink'
+    policy_name = 'PSP-{}'.format(ov)
+    #policy_name = 'PSP-{}-{}'.format(ov, res)
+    #c = psp_c[psp_i % len(psp_c)]
+    #psp_i += 1
+  elif 'rss' in policy:
+    c = 'red'
+    m = 'x'
+    ls = '-.'
+    if TYPE == 'short':
+        policy_name = ''
+  elif 'afp' in policy:
+    ls = '--'
+    m = 's'
+    c = 'blue'
+    #ov = policy_name.split('_')[1].strip('ov')
+    q = policy_name.split('_')[2].strip('q')
+    match int(q):
+        case 1:
+            c = 'blue'
+        case 2:
+            c = 'green'
+        case 4:
+            c = 'purple'
+        case 8:
+            c = 'black'
+    policy_name = 'AFP-{}'.format(q)
+    #c = afp_c[afp_i]
+    #afp_i = (afp_i + 1) % len(afp_c)
+
   x, y, yerr = process_folder(policy)
+
+  print(policy_name, dist)
 
   return {
     'x': x,
     'y': y,
     'style': {
         #'label': '{} - {}'.format(policy_name, dist),
-        'label': '{}'.format(policy_name),
+        'label': '{}'.format(policy_name).upper(),
         'color': c,
         'linestyle': ls,
         'marker': m,
         'linewidth': 1.0,
-        'markersize': 5.0,
+        'markersize': 4,
         #'markerfacecolor': mc,
         #'markeredgecolor': mc
     },
@@ -158,18 +204,17 @@ def new_dataset(policy):
         'color': c,
         'linestyle': ls,
         'marker': m,
-        'barsabove': True,
-        'elinewidth': 0.5,
+        'elinewidth': 1,
+        #'barsabove': True,
         'linewidth': 1.0,
-        'markersize': 5.0,
+        'markersize': 4,
+        'capsize': 3, # upper and bottom in error bar
         #'markerfacecolor': mc,
         #'markeredgecolor': mc
     },
   }
 
-
 datasets = []
-
 
 # return dict with each key a array de datasets
 # each key is a arrival dist
@@ -183,6 +228,12 @@ def multdatasets_create(policys):
     for i, policy in enumerate(policys):
         dist = str(policy.split('/')[2])
 
+        match dist:
+            case 'exp':
+                dist = 'Exponencial'
+            case 'lognorm':
+                dist = 'Lognormal'
+
         if dist not in d:
             d[dist] = []
 
@@ -191,11 +242,8 @@ def multdatasets_create(policys):
     #print(d)
     return d
 
-
-
 if __name__ == '__main__':
 
-  locale.setlocale(locale.LC_NUMERIC, "pt_BR.utf8")#
 
   if "-long" in sys.argv:
       sys.argv.remove("-long")
@@ -214,20 +262,21 @@ if __name__ == '__main__':
       get_slowdown = True
       TYPE = "all"
 
-  #rows = multdatasets_create(sys.argv[1:])
-  #print('total datasets {}'.format(len(rows)))
+  name = sys.argv[1]
+  del(sys.argv[1])
+
+  rows = multdatasets_create(sys.argv[1:])
+  print('total datasets {}'.format(len(rows)))
 
 
-  for policy in sys.argv[1:]:
-     datasets.append(new_dataset(policy))
+  #for policy in sys.argv[1:]:
+  #   datasets.append(new_dataset(policy))
 
   # edit manually this general settings
   config = {
-      'datasets': datasets,
-      #'mult_datasets': rows,
-      'xlabel': 'Vazão (MRPS)',
-      #'xlabel': 'Utilização (%)',
-      #'ylabel': 'Latency 99.9% (us)',
+      #'datasets': datasets,
+      'mult_datasets': rows,
+      'xlabel': 'Utilização (%)',
       'ylabel': 'Latência de Cauda ($\mu$s)',
 
       'font': {
@@ -249,22 +298,27 @@ if __name__ == '__main__':
       },
 
       'set_ticks': {
-          'xmajor': 1,
+          'xmajor': 10,
           'xminor': 0,
-          'ymajor': 2,
-          'yminor': 1,
+          'ymajor': 20,
+          'yminor': 10,
       },
 
       'legend': {
-          #'loc': 'lower center',
+          'loc': 'upper center',
+          #'bbox_to_anchor': (0.5, 1.3),
+          'bbox_to_anchor': (0.5, 1.45),
+          #'loc': 'lower left',
+          #'bbox_to_anchor': (0.2, 0.9, 1.0, 0.2), #outside plot
           #'bbox_to_anchor': (0, 1.02, 1.0, 0.2), #outside plot
           #'bbox_to_anchor': (0.25, 1.),
           #'loc': 'upper left',
-          'loc': 'best',
-      #    'title': 'Overhead (ns)',
+          #'title': 'Overhead (ns)',
+          #'loc': 'lower left',
+          #'bbox_to_anchor': (0, 0.65, 1, 0.2),
           'title_fontsize' : 12,
-          'fontsize': 15,
-          'ncol': 1,
+          'fontsize': 18,
+          'ncol': 3,
           #'mode': 'expand',
           #'handles': legend_paches
           'frameon': False,
@@ -283,11 +337,26 @@ if __name__ == '__main__':
       #    'loc': 'center'
       #},
 
-      #'ylim': [0, 100],
-      'ylim': [0, 14],
-      'xlim': [0, 13],  # max(overhead) + 10],
-      'save': 'imgs/cfcfs_latency.pdf',
+      'ylim': [0, 80],
+      'xlim': [0, 99.9],  # max(overhead) + 10],
+      #'save': 'imgs/{}.pdf'.format(TYPE),
+      'save': 'imgs/{}_{}_{}.pdf'.format(workload, TYPE, name),
+      #'save': 'imgs/test.pdf'.format(workload, TYPE),
+      #'save': 'imgs/{}.png'.format(TYPE),
       'show': 'n',
   }
 
-  c = charts.line(config)
+  if TYPE == 'long' or TYPE == 'all':
+      config['set_ticks']['ymajor'] = 150
+      config['set_ticks']['yminor'] = 50
+      config['ylim'] = [0, 600]
+      config['legend']['ncol'] = 4
+
+  if get_slowdown:
+      config['save'] = 'imgs/slowdown_{}_{}.pdf'.format(workload, TYPE)
+      config['ylabel'] = 'Slowdown'
+      config['set_ticks']['ymajor'] = 25
+      config['set_ticks']['yminor'] = 0
+      config['ylim'] = [0, 100]
+
+  c = charts.multrows_line(config)
