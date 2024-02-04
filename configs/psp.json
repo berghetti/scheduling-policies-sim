@@ -1,5 +1,5 @@
 {
- "avg_system_load": 0.4,
+ "avg_system_load": 0.8,
  "rps": 1000000,
  "num_queues": 15,
  "num_threads": 15,
@@ -59,7 +59,7 @@
 
  "persephone_enable": true,
  "persephone_total_reserved_cores": 2,
- "PERSEPHONE_OVERHEAD": 250,
+ "PERSEPHONE_OVERHEAD": 150,
 
  "SHORT_REQUEST_SERVICE_TIME": 500,
  "LONG_REQUEST_SERVICE_TIME": 500000,

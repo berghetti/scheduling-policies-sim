@@ -1,5 +1,5 @@
 {
- "avg_system_load": 0.9,
+ "avg_system_load": 0.3,
  "num_queues": 15,
  "num_threads": 15,
  "mapping": [
@@ -59,13 +59,13 @@
  "afp_enable": true,
  "afp_rr": false,
  "afp_unconditional_interrupt": false,
- "AFP_STARVATION_COUNTER_THRESHOLD": 500,
+ "AFP_STARVATION_COUNTER_THRESHOLD": 1000,
  "PREEMPTION_QUANTUM": 1000,
  "PREEMPTION_OVERHEAD": 580,
 
- "SHORT_REQUEST_SERVICE_TIME": 500,
- "LONG_REQUEST_SERVICE_TIME": 500000,
- "SHORT_REQUEST_RATE": 995,
+ "SHORT_REQUEST_SERVICE_TIME": 1000,
+ "LONG_REQUEST_SERVICE_TIME": 100000,
+ "SHORT_REQUEST_RATE": 990,
 
  "AVERAGE_SERVICE_TIME": 1000,
  "WORK_STEAL_CHECK_TIME": 100,
